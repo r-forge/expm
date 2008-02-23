@@ -43,12 +43,10 @@ stopifnot(rowMeans(re) < 1e-15,
 cat('Time elapsed: ', (p1 <- proc.time()),'\n') # for ``statistical reasons''
 
 
-M.expm <- function(x) expm(x, "Ward77")
-
 set.seed(321)
 RE <- replicate(1000,
-                c(re.nilA3(rlnorm(3), M.expm),
-                  re.nilA3(rnorm(3),  M.expm)))
+                c(re.nilA3(rlnorm(3), function(x) expm(x, "Ward77")),
+                  re.nilA3(rnorm(3),  function(x) expm(x, "Ward77"))))
 stopifnot(rowMeans(RE) < 1e-15,
           apply(RE, 1, quantile, 0.80) < 1e-16,
           apply(RE, 1, quantile, 0.90) < 2e-15,
@@ -69,18 +67,8 @@ cat('Time elapsed: ',(p2 <- proc.time())-p1,'\n') # for ``statistical reasons''
 if(!require("Matrix"))
     q('no')
 ##  ------  the rest really uses 'Matrix'
-
-##--> ~/R/MM/Pkg-ex/Matrix/rcondition-numb.R  -- about rcond( <random mat>)
-
-## Result :
-##   -log[rcond] = log(Kappa) = 1.051 + 1.6226 * log(n)
-##   ==================================================
-##   1/rcond = Kappa = exp(1.051 + 1.6226 * log(n))
-##                   = 2.8605 * n ^ 1.6226
-##   ==================================================
-
-## since we *search* a bit, take a factor ~ 4  higher rcond:
-##  4 / 2.8605 ~ 1.4
+##---> now use  expm::expm()  since Matrix has its own may mask the expm one
+##              ^^^^^^^^^^^^
 
 rMat <- function(n, R_FUN = rnorm,
                  rcondMin = 1.4 * n ^ -1.6226,
@@ -91,6 +79,18 @@ rMat <- function(n, R_FUN = rnorm,
     ## Arguments:
     ## ----------------------------------------------------------------------
     ## Author: Martin Maechler, Date: 19 Jan 2008
+    ##
+    ##--> /u/maechler/R/MM/Pkg-ex/Matrix/rcondition-numb.R  researches rcond( <random mat>)
+    ## Result :
+    ##   -log[rcond] = log(Kappa) = 1.051 + 1.6226 * log(n)
+    ##   ==================================================
+    ##   1/rcond = Kappa = exp(1.051 + 1.6226 * log(n))
+    ##                   = 2.8605 * n ^ 1.6226
+    ##   ==================================================
+
+    ## since we *search* a bit, take a factor ~ 4  higher rcond:
+    ##  4 / 2.8605 ~ 1.4 --> default of rcondMin  above
+
     it <- 1
     rcOpt <- 0
     repeat {
@@ -137,7 +137,7 @@ rnilMat <- function(n, R_FUN = function(n) rpois(n, lambda=5))
 set.seed(17)
 m <- rnilMat(10)
 as(m, "sparseMatrix")# for nicer printing
-E.m <- expm(m, method="Pade")
+E.m <- expm::expm(m, method="Pade")
 as(E.m, "sparseMatrix")
 
 (dN <- 9*7*320) # 20160
@@ -162,11 +162,11 @@ Em.xct <- EmN / dN
 stopifnot(all.equal(E.m, Em.xct,
                     check.attributes = FALSE, tol= 1e-13))
 expmList <-
-    list(M.expm,
-         function(x)expm(x,method="Pade"),
-         function(x)expm(x,method="PadeO"),
-         function(x)expm(x,method="Taylor"),
-         function(x)expm(x,method="TaylorO"))
+    list(function(x) expm::expm(x,method="Ward77"),
+         function(x) expm::expm(x,method="Pade"),
+         function(x) expm::expm(x,method="PadeO"),
+         function(x) expm::expm(x,method="Taylor"),
+         function(x) expm::expm(x,method="TaylorO"))
 sapply(expmList, function(EXPM) relErr(Em.xct, EXPM(m)))
 ## 1.079e-16 4.5054e-14 4.5025e-14 3.716219e-17 7.078512e-18
 ## "Ward77" expm() is again  much more accurate than  s+Pade+s,

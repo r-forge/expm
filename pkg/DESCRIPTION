@@ -7,6 +7,6 @@ Author: Vincent Goulet, Christophe Dutang, David Firth, Marina Shapira, Martin M
 Maintainer: Vincent Goulet <vincent.goulet@act.ulaval.ca>
 Description: Simple package providing an R and a C function to compute
   the matrix exponential of a matrix.
-Depends: R (>= 2.4.0)
-Suggests: Matrix
+Depends: R (>= 2.4.1)
+Enhances: Matrix
 License: GPL (>= 2)
