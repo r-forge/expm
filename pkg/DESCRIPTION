@@ -1,11 +1,12 @@
 Package: expm
 Type: Package
 Title: Matrix exponential
-Version: 0.1-1
-Date: 2007-11-17
-Author: Vincent Goulet, Christophe Dutang
+Version: 0.2-1
+Date: 2008-02-23
+Author: Vincent Goulet, Christophe Dutang, David Firth, Marina Shapira, Martin Maechler
 Maintainer: Vincent Goulet <vincent.goulet@act.ulaval.ca>
 Description: Simple package providing an R and a C function to compute
   the matrix exponential of a matrix.
 Depends: R (>= 2.4.0)
+Suggests: Matrix
 License: GPL (>= 2)
