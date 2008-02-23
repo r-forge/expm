@@ -3,6 +3,7 @@
 library(expm)
 
 source(system.file("test-tools.R", package= "expm"))## -> assertError()...
+## rMat(), ..
 
 ### For nilpotent matrices A, exp(A) is polynomial in A
 ###  Mathworld gives the example of  the general  3 x 3  upper triangle
@@ -70,45 +71,7 @@ if(!require("Matrix"))
 ##---> now use  expm::expm()  since Matrix has its own may mask the expm one
 ##              ^^^^^^^^^^^^
 
-rMat <- function(n, R_FUN = rnorm,
-                 rcondMin = 1.4 * n ^ -1.6226,
-                 iterMax = 100)
-{
-    ## Purpose: random square matrix "not close to singular"
-    ## ----------------------------------------------------------------------
-    ## Arguments:
-    ## ----------------------------------------------------------------------
-    ## Author: Martin Maechler, Date: 19 Jan 2008
-    ##
-    ##--> /u/maechler/R/MM/Pkg-ex/Matrix/rcondition-numb.R  researches rcond( <random mat>)
-    ## Result :
-    ##   -log[rcond] = log(Kappa) = 1.051 + 1.6226 * log(n)
-    ##   ==================================================
-    ##   1/rcond = Kappa = exp(1.051 + 1.6226 * log(n))
-    ##                   = 2.8605 * n ^ 1.6226
-    ##   ==================================================
-
-    ## since we *search* a bit, take a factor ~ 4  higher rcond:
-    ##  4 / 2.8605 ~ 1.4 --> default of rcondMin  above
-
-    it <- 1
-    rcOpt <- 0
-    repeat {
-        M <- matrix(R_FUN(n^2), n,n)
-        if((rc <- rcond(M)) >= rcondMin) break
-        if(rc > rcOpt) {
-            rcOpt <- rc
-            M.Opt <- M
-        }
-        if((it <- it+1) > iterMax) {
-            warning("No Matrix found with rcond() >= ",format(rcondMin),
-                    "\n Achieved rcond() = ", format(rcOpt),"\n")
-            M <- M.Opt
-            break
-        }
-    }
-    M
-}
+## rMat() relies on Matrix::rcond():
 
 ## Now with the change default rcondMin, this "works"
 system.time(R40 <- rMat(40))
