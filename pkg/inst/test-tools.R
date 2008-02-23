@@ -68,7 +68,9 @@ rSpMatrix <- function(nrow, ncol = nrow, nnz,
 
 
 ## This needs "Matrix" package
-rMat <- function(n, R_FUN = rnorm)
+rMat <- function(n, R_FUN = rnorm,
+                 rcondMin = 1.4 * n ^ -1.6226,
+                 iterMax = 100)
 {
     ## Purpose: random square matrix "not close to singular"
     ## ----------------------------------------------------------------------
