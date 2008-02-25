@@ -44,6 +44,7 @@ stopifnot(rowMeans(re) < 1e-15,
 cat('Time elapsed: ', (p1 <- proc.time()),'\n') # for ``statistical reasons''
 
 
+## Check *many* random nilpotent matrices:
 set.seed(321)
 RE <- replicate(1000,
                 c(re.nilA3(rlnorm(3), function(x) expm(x, "Ward77")),

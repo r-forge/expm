@@ -53,6 +53,20 @@ A3 <- rbind(c(-1, 1),
 (mA3 <- expm(A3, method="Pade"))
 assertError(expm(mA3, method="Eigen"))
 em1 <- exp(-1)
-stopifnot(all.equal(mA3,
+stopifnot(all.equal(mA3, ## and the exact solution:
                     matrix(c(em1, 0, em1, em1), 2, 2),
                     check.attrib = FALSE, tol = 1e-14))
+## --- 4 ---
+## Here, some version of do_expm() failed:
+(m <- matrix(c(0,2:0),2))
+## Eigenvalue decomposition:
+d <- c(sqrt(2), -sqrt(2))
+V <- rbind(c(sqrt(1/3), -sqrt(1/3)),
+           c(sqrt(2/3),  sqrt(2/3)))
+## ==>
+IV <- rbind(c( sqrt(3/4), sqrt(3/8)),
+            c(-sqrt(3/4), sqrt(3/8)))
+stopifnot(all.equal(V %*% IV, diag(2)))
+em.true <- V %*% (exp(d) * IV)
+stopifnot(all.equal(em.true, expm::expm(m)),
+          all.equal(em.true, expm::expm(m,"Pade"), check.attrib=FALSE))

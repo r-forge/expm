@@ -11,10 +11,9 @@ source(system.file("test-tools.R", package= "expm"))## -> assertError()...
 ## ----------------------------
 ## Test case 1 from Ward (1977)
 ## ----------------------------
-test1 <- t(matrix(c(
-    4, 2, 0,
-    1, 4, 1,
-    1, 1, 4), 3, 3))
+test1 <- rbind(c(4, 2, 0),
+               c(1, 4, 1),
+               c(1, 1, 4))
 (m1 <- expm(test1, method="Pade"))
 (m1O <- expm(test1, method="PadeO"))# very slightly different
 (m1T  <- expm(test1,method="Taylor"))
