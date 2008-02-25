@@ -2,15 +2,21 @@
  * src/util.c  (by Vincent Goulet)
  * with slight shortcuts by Martin Maechler: */
 
-#include <R.h>
-#include <R_ext/BLAS.h>
-
 /* Power of a matrix x^k := x x ... x, where x in an (n x n) matrix
  * and k is an *integer* (including -1). This function is fairly naive
  * with little error checking since it is currently used in a very
  * narrow and already controlled context.
  */
+#include <R_ext/BLAS.h>
+
+#include "matpow.h"
+
 void matpow(double *x, int n, int k, double *z);
+
+/* Use this as R - C API  -- so it's usable even from fortran user code : */
+
+/* TODO : replace this with .Call() version !
+ * void R_matpow(double *x, int *n, int *k, double *z) */
 
 int F77_SUB(matpowf)(double *x, int *n, int *k, double *z)
 {
