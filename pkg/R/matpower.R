@@ -4,16 +4,6 @@
 
 "%^%" <- function(x, k)
 {
-    if(!is.matrix(x))
-	stop("x must be a matrix")
-    d <- dim(x)
-    if((n <- d[1]) != d[2])
-	stop("x must be a square matrix")
     stopifnot(k == round(k))
-    ## TODO: .Call(do_matpow, x, n, k)
-    .Fortran(matpowf,
-	     x,
-	     as.integer(n),
-	     as.integer(k),
-	     z = matrix(0, n,n))$z
+    .Call(R_matpow, x, as.integer(k))
 }
