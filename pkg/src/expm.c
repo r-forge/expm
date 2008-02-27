@@ -53,18 +53,15 @@ void expm(double *x, int n, double *z)
     else
     {
 	/* Constants */
-	int i, j;
-	int nsqr = n * n, np1 = n + 1, is_uppertri = TRUE;
-	int iloperm, ihiperm, iloscal, ihiscal, info, sqrpowscal;
-	double infnorm, trshift, one = 1.0, zero = 0.0, m1pj = -1;
-	double tmp;
-	char jobVL[1], jobVR[1];
-	char *transa = "N";
-
+	const double one = 1.0, zero = 0.0;
+	const int nsqr = n * n, np1 = n + 1;
+	/* Variables */
+	int i, j, is_uppertri = TRUE;;
+	int ilo, ihi, iloscal, ihiscal, info, sqrpowscal;
+	double infnorm, trshift, m1pj = -1;
 
 	/* Arrays */
 	int *pivot    = (int *) R_alloc(n, sizeof(int)); /* pivot vector */
-	int *invperm  = (int *) R_alloc(n, sizeof(int)); /* inverse permutation vector */
 	double *perm  = (double *) R_alloc(n, sizeof(double)); /* permutation array */
 	double *scale = (double *) R_alloc(n, sizeof(double)); /* scale array */
 	double *work  = (double *) R_alloc(nsqr, sizeof(double)); /* workspace array */
@@ -81,9 +78,7 @@ void expm(double *x, int n, double *z)
 		    break;
 
 
-
-	/* Step 1 of preconditioning: shift diagonal by average
-	 * diagonal if positive. */
+	/* Step 1 of preconditioning: shift diagonal by average diagonal. */
 	trshift = 0.0;
 	for (i = 0; i < n; i++)
 	    trshift += x[i * np1];
@@ -95,11 +90,11 @@ void expm(double *x, int n, double *z)
 	/* Step 2 of preconditioning: balancing with dgebal. */
 	if (is_uppertri) {
 	    /* no need to permute if x is upper triangular */
-	    iloperm = 1;
-	    ihiperm = n;
+	    ilo = 1;
+	    ihi = n;
 	}
 	else {
-	    F77_CALL(dgebal)("P", &n, z, &n, &iloperm, &ihiperm, perm, &info);
+	    F77_CALL(dgebal)("P", &n, z, &n, &ilo, &ihi, perm, &info);
 	    if (info)
 		error(_("LAPACK routine dgebal returned info code %d when permuting"), info);
 	}
@@ -137,7 +132,7 @@ void expm(double *x, int n, double *z)
 			     &n, &zero, work, &n);
 	    for (i = 0; i < nsqr; i++)
 		dpp[i] = work[i] + m1pj * padec88[j] * z[i];
-	    m1pj *= -1;		/* (-1)^j */
+	    m1pj *= -1; /* (-1)^j */
 	}
 	/* power 0 */
 	for (i = 0; i < nsqr; i++)
@@ -166,35 +161,38 @@ void expm(double *x, int n, double *z)
 			    z, &n, &zero, work, &n);
 	    Memcpy(z, work, nsqr);
 	}
-	/* Preconditioning 2: apply inverse scaling */
+
+
+	/* Preconditioning 2: Inversion of 'dgebal()' :
+	 * ------------------ Note that dgebak() seems *not* applicable */
+
+	/* Step 2 a)  apply inverse scaling -- TODO speedup: only inside {ilo:ihi} */
 	for (j = 0; j < n; j++)
 	    for (i = 0; i < n; i++)
 		z[i + j * n] *= scale[i]/scale[j];
 
-	/* Inverse permuation if x is not upper triangular and 'perm'
-	 * is not the identity permutation */
-	if (!is_uppertri && (iloperm != 1 || ihiperm != n))
-	{
+	/* 2 b) Inverse permutation  (if not the identity permutation) */
+
+	if (ilo != 1 || ihi != n) {
+	    /* inverse permutation vector: */
+	    int *invperm = (int *) R_alloc(n, sizeof(int));
+
 	    /* balancing permutation vector */
 	    for (i = 0; i < n; i++)
 		invperm[i] = i;	/* identity permutation */
 
 	    /* leading permutations applied in forward order */
-	    for (i = 0; i < (iloperm - 1); i++)
+	    for (i = 0; i < (ilo - 1); i++)
 	    {
-		int permutedindex = (int) (perm[i]) - 1;
-		int tmp = invperm[i];
-		invperm[i] = invperm[permutedindex];
-		invperm[permutedindex] = tmp;
+		int p_i = (int) (perm[i]) - 1;
+		int tmp = invperm[i]; invperm[i] = invperm[p_i]; invperm[p_i] = tmp;
 	    }
 
 	    /* trailing permutations applied in reverse order */
-	    for (i = n - 1; i >= ihiperm; i--)
+	    for (i = n - 1; i >= ihi; i--)
 	    {
-		int permutedindex = (int) (perm[i]) - 1;
-		int tmp = invperm[i];
-		invperm[i] = invperm[permutedindex];
-		invperm[permutedindex] = tmp;
+		int p_i = (int) (perm[i]) - 1;
+		int tmp = invperm[i]; invperm[i] = invperm[p_i]; invperm[p_i] = tmp;
 	    }
 
 	    /* construct inverse balancing permutation vector */
@@ -208,6 +206,7 @@ void expm(double *x, int n, double *z)
 		for (i = 0; i < n; i++)
 		    z[i + j * n] = work[invperm[i] + invperm[j] * n];
 	}
+
 	/* Preconditioning 1: Trace normalization */
 	if (trshift > 0)
 	{
