@@ -1,5 +1,10 @@
 2008-02-27  Martin Maechler  <maechler@stat.math.ethz.ch>
 
+	* DESCRIPTION (Version): 0.9-1  -- new version for the occasion
+
+	* src/expm.c (expm): HOORAY !! --- fixed the octave bug:
+	using simpler __ and correct __ code for  back-permuting
+
 	* R/expm.R (expm): add method = "R_Ward77"
 	  which works *correctly* !
 

@@ -166,7 +166,7 @@ void expm(double *x, int n, double *z)
 	/* Preconditioning 2: Inversion of 'dgebal()' :
 	 * ------------------ Note that dgebak() seems *not* applicable */
 
-	/* Step 2 a)  apply inverse scaling -- TODO speedup: only inside {ilo:ihi} */
+	/* Step 2 a)  apply inverse scaling */
 	for (j = 0; j < n; j++)
 	    for (i = 0; i < n; i++)
 		z[i + j * n] *= scale[i]/scale[j];
@@ -174,37 +174,31 @@ void expm(double *x, int n, double *z)
 	/* 2 b) Inverse permutation  (if not the identity permutation) */
 
 	if (ilo != 1 || ihi != n) {
-	    /* inverse permutation vector: */
-	    int *invperm = (int *) R_alloc(n, sizeof(int));
-
-	    /* balancing permutation vector */
-	    for (i = 0; i < n; i++)
-		invperm[i] = i;	/* identity permutation */
-
-	    /* leading permutations applied in forward order */
-	    for (i = 0; i < (ilo - 1); i++)
-	    {
-		int p_i = (int) (perm[i]) - 1;
-		int tmp = invperm[i]; invperm[i] = invperm[p_i]; invperm[p_i] = tmp;
+	    /* ---- new code by Martin Maechler ----- */
+#define SWAP_ROW(I,J)								\
+	    for(k = 0; k < n; k++) {						\
+		double t = z[(I)+ k*n]; z[(I)+ k*n] = z[(J)+ k*n]; z[(J)+ k*n] = t; \
 	    }
 
-	    /* trailing permutations applied in reverse order */
-	    for (i = n - 1; i >= ihi; i--)
-	    {
-		int p_i = (int) (perm[i]) - 1;
-		int tmp = invperm[i]; invperm[i] = invperm[p_i]; invperm[p_i] = tmp;
+#define SWAP_COL(I,J)								\
+	    for(k = 0; k < n; k++) {						\
+		double t = z[k+ (I)*n]; z[k+ (I)*n] = z[k+ (J)*n]; z[k+ (J)*n] = t; \
 	    }
 
-	    /* construct inverse balancing permutation vector */
-	    Memcpy(pivot, invperm, n);
-	    for (i = 0; i < n; i++)
-		invperm[pivot[i]] = i;
+#define RE_PERMUTE(I)				\
+	    int k, p_I = (int) (perm[I]) - 1;	\
+	    SWAP_COL(I, p_I);			\
+	    SWAP_ROW(I, p_I)
 
-	    /* apply inverse permutation */
-	    Memcpy(work, z, nsqr);
-	    for (j = 0; j < n; j++)
-		for (i = 0; i < n; i++)
-		    z[i + j * n] = work[invperm[i] + invperm[j] * n];
+	    /* reversion of "leading permutations" : in reverse order */
+	    for (i = (ilo - 1) - 1; i >= 0; i--) {
+		RE_PERMUTE(i);
+	    }
+
+	    /* reversion of "trailing permutations" : applied in forward order */
+	    for (i = (ihi + 1) - 1; i < n; i++) {
+		RE_PERMUTE(i);
+	    }
 	}
 
 	/* Preconditioning 1: Trace normalization */
