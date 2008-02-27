@@ -19,13 +19,17 @@ test1 <- rbind(c(4, 2, 0),
 (m1T  <- expm(test1,method="Taylor"))
 (m1TO <- expm(test1,method="TaylorO"))
 
+## "true" result
 m1.t <- matrix(c(147.866622446369, 127.781085523181, 127.781085523182,
                  183.765138646367, 183.765138646366, 163.679601723179,
                  71.797032399996,  91.8825693231832, 111.968106246371), 3,3)
 stopifnot(all.equal(m1.t, m1,  check.attrib=FALSE, tol = 1e-13),
           all.equal(m1.t, m1O, check.attrib=FALSE, tol = 1e-13),
           all.equal(m1.t,m1T,  check.attrib=FALSE, tol = 1e-13),
-          all.equal(m1.t,m1TO, check.attrib=FALSE, tol = 1e-13))
+          all.equal(m1.t,m1TO, check.attrib=FALSE, tol = 1e-13),
+          all.equal(m1.t, expm(test1,"Ward77"),    tol = 1e-13),
+          all.equal(m1.t, expm(test1,"R_Pade"),    tol = 1e-13),
+          all.equal(m1.t, expm(test1,"R_Ward77"),  tol = 1e-13))
 ## -- these agree with ward (1977, p608)
 ##
 m1.2 <- try( expm(test1, "Eigen") ) ## 32-bit: gives an error from solve; 64-bit "ok"
@@ -64,9 +68,12 @@ m2.t <- matrix(c(5496313853692216, -18231880972008932, -30475770808579672,
 stopifnot(all.equal(m2.t, m2, check.attrib=FALSE, tol = 1e-12),
           all.equal(m2.t, m2O,check.attrib=FALSE, tol = 1e-12),
           all.equal(m2.t,m2T, check.attrib=FALSE, tol = 1e-12),
-          all.equal(m2.t,m2TO,check.attrib=FALSE, tol = 1e-12))
+          all.equal(m2.t,m2TO,check.attrib=FALSE, tol = 1e-12),
+          all.equal(m2.t, expm(test2,"Ward77"),   tol = 1e-12),
+          all.equal(m2.t, expm(test2,"R_Ward77"), tol = 1e-12),
+          all.equal(m2.t, expm(test2,"R_Pade"),   tol = 1e-12),
+          TRUE)
 
-##
 ## ----------------------------
 ## Test case 3 from Ward (1977)
 ## ----------------------------
@@ -93,7 +100,11 @@ stopifnot(all.equal(m3.t, m3,           check.attrib=FALSE, tol = 1e-11),
           all.equal(m3.t, m3T,          check.attrib=FALSE, tol = 1e-11),
           all.equal(m3.t, m3O,          check.attrib=FALSE, tol = 1e-11),
           all.equal(m3.t, m3TO,         check.attrib=FALSE, tol = 1e-11),
-          all.equal(m3.t, expm(test3,"Eigen"), check.attrib=FALSE, tol = 1e-10))
+          all.equal(m3.t, expm(test3,"Eigen"), tol = 1e-11),
+          all.equal(m3.t, expm(test3,"Ward77"), tol = 1e-11),
+          all.equal(m3.t, expm(test3,"R_Ward"), tol = 1e-11),
+          all.equal(m3.t, expm(test3,"R_Pade"), tol = 1e-11),
+          TRUE)
 ## -- in this case, a similar level of agreement with Ward (1977).
 
 ## ----------------------------
@@ -123,6 +134,9 @@ stopifnot(all.equal(m4  [,10], 1/gamma(10:1), tol=1e-14),
           all.equal(m4, m4O,  tol=5e-15),
           all.equal(m4, m4T,  tol=5e-15),
           all.equal(m4, m4TO, tol=5e-15),
+          all.equal(m4, expm(test4,"Ward77"), check.attrib=FALSE, tol = 1e-14),
+          all.equal(m4, expm(test4,"R_Ward"), check.attrib=FALSE, tol = 1e-14),
+          all.equal(m4, expm(test4,"R_Pade"), check.attrib=FALSE, tol = 1e-14),
           max(abs(m4 - expm(test4,"Eigen"))) < 1e-7)
 ## here expm(., EV ) is accurate only to 7 d.p., whereas
 ##      expm(.,Pade) is correct to at least 14 d.p.

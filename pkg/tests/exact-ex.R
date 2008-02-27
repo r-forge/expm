@@ -22,11 +22,9 @@ nilA3 <- function(x,y,z) {
 
 re.nilA3 <- function(xyz, EXPM)
 {
+### TODO:  allow several kinds of EXPM() simultaneously (for same 'r')
     EXPM <- match.fun(EXPM)
     r <- do.call(nilA3, as.list(xyz))
-
-### TODO:  allow several kinds of EXPM() simultaneously (for same 'r')
-
     relErr(r$expA, EXPM(r$A))
 }
 

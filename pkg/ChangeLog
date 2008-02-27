@@ -1,0 +1,19 @@
+2008-02-27  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* R/expm.R (expm): add method = "R_Ward77"
+	  which works *correctly* !
+
+2008-02-25  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* R/matpower.R ("%^%"): add R interface to
+	* src/matpow.c
+
+2008-02-23  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* R/expm.R (expm): add methods from David Firth's "mexp"
+	and my modifications, of Fortran code in
+	* src/mexp-common.f
+	* src/matrexp.f
+	* src/matrexpO.f
+
+

@@ -10,21 +10,28 @@
   approximation are very importantly combined with scaling and squaring.
 }
 \usage{
-expm(x, method = c("Ward77", "Pade", "Taylor", "PadeO", "TaylorO", "Eigen"),
+expm(x, method = c("Ward77", "Pade", "Taylor", "PadeO", "TaylorO",
+                   "Eigen", "R_Pade", "R_Ward77"),
      order = 8, trySym = TRUE)
 }
 \arguments{
   \item{x}{a square matrix.}
-  \item{method}{"Pade" or "Taylor"; the versions with "*O" call the
+  \item{method}{"Ward77", "Pade" or "Taylor", etc; the versions with "*O" call the
       original Fortran code, whereas the first ones call the BLAS-using
-      and partly simplified newer code.}
+      and partly simplified newer code.\cr
+    \code{"R_Pade"} uses an \R-code version of \code{"Pade"} for
+    didactical reasons, and\cr
+    \code{"R_Ward77"} uses an \R version of \code{"Ward77"}, still based
+    on LAPACK's \code{dgebal}, see \R interface \code{\link{dgebal}}.
+    This has enabled us to diagnose and fix the bug in the original
+    octave implementation of \code{"Ward77"}.
+    }
   \item{order}{an integer, the order of approximation to be used, for
     the "Pade" and "Taylor" methods.  The best value for this depends on
     machine precision (and slightly on \code{x}) but for the current
     double precision arithmetic, one recommendation %% and Matlab !!!
-    uses \code{order = 6} unconditionally.
-
-    %% FIXME: SHould change  default from  8 to 6   ??
+    uses \code{order = 6} unconditionally;\cr
+    our default, \code{8}, is from Ward(1977, p.606)'s recommendation.
   }
   \item{trySym}{logical indicating if \code{method = "Eigen"} should use
     \code{\link{isSymmetric}(x)} and take advantage for (almost)
@@ -54,11 +61,11 @@ expm(x, method = c("Ward77", "Pade", "Taylor", "PadeO", "TaylorO", "Eigen"),
   contributed by A. Scottedward Hodel \email{A.S.Hodel@eng.auburn.edu}.
 
   The \code{"PadeO"} and  \code{"TaylorO"} methods:\cr
-  Marina Shapira and David Firth (U Warwick, UK);
+  Marina Shapira (U Oxford, UK) and David Firth (U Warwick, UK);
 
   The \code{"Pade"} and  \code{"Taylor"} methods are slight
   modifications of the "*O" ([O]riginal versions) methods,
-  by Martin Maechler
+  by Martin Maechler, using BLAS and LINPACK where possible.
 }
 \references{
   Ward, R. C. (1977).  Numerical computation
