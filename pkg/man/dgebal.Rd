@@ -71,6 +71,12 @@ m4 <- rbind(c(-1,-1, 0, 0),
             c( 0, 0,10, 0),
             c( 0,10, 0, 0))
 (b4 <- dgebal(m4))
+
+## --- for testing and didactical reasons : ----
+
+demo(dgebalTst) # also defines the dgebalTst() function
+                # which in its tests ``defines'' what
+                # the return value means, notably (i1,i2,scale)
 }
 \keyword{array}
 \keyword{arith}

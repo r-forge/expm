@@ -66,6 +66,31 @@ rSpMatrix <- function(nrow, ncol = nrow, nnz,
     m
 }
 
+zeroTrace <- function(m) {
+    ## Make the {average} trace to 0  -- as it is inside expm(. "Ward77")
+    ## This version also works for 'Matrices'
+    stopifnot(length(dim(m)) == 2,
+              is.numeric(dd <- diag(m)))
+    diag(m) <- dd - mean(dd)
+    m
+}
+
+uniqEntries <- function(m, diagS = FALSE)
+{
+    ## Purpose: make the non-zero entries of matrix 'm' ``unique''
+    ## ----------------------------------------------------------------------
+    ## Arguments:
+    ## ----------------------------------------------------------------------
+    ## Author: Martin Maechler, Date: 26 Feb 2008, 14:40
+    m[m > 0] <-  seq_len(sum(m > 0))
+    m[m < 0] <- -seq_len(sum(m < 0))
+    if(diagS)
+        diag(m) <- 10 * sign(diag(m))
+    m
+}
+
+
+
 
 ## This needs "Matrix" package
 rMat <- function(n, R_FUN = rnorm,
@@ -90,6 +115,7 @@ rMat <- function(n, R_FUN = rnorm,
     ## since we *search* a bit, take a factor ~ 4  higher rcond:
     ##  4 / 2.8605 ~ 1.4 --> default of rcondMin  above
 
+    stopifnot(require("Matrix")) # needs also as(*, ..) etc
     it <- 1
     rcOpt <- 0
     repeat {

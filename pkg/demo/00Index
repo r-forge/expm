@@ -1,1 +1,2 @@
 expm			matrix exponential
+dgebalTst		Exploring LAPACK's dgebal() Matrix balancing
