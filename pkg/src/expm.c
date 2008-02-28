@@ -54,7 +54,7 @@ void expm(double *x, int n, double *z)
     {
 	/* Constants */
 	const double one = 1.0, zero = 0.0;
-	const int nsqr = n * n, np1 = n + 1;
+	const int i1 = 1, nsqr = n * n, np1 = n + 1;
 	/* Variables */
 	int i, j, is_uppertri = TRUE;;
 	int ilo, ihi, iloscal, ihiscal, info, sqrpowscal;
@@ -174,19 +174,15 @@ void expm(double *x, int n, double *z)
 	/* 2 b) Inverse permutation  (if not the identity permutation) */
 
 	if (ilo != 1 || ihi != n) {
-	    /* ---- new code by Martin Maechler ----- */
-#define SWAP_ROW(I,J)								\
-	    for(k = 0; k < n; k++) {						\
-		double t = z[(I)+ k*n]; z[(I)+ k*n] = z[(J)+ k*n]; z[(J)+ k*n] = t; \
-	    }
 
-#define SWAP_COL(I,J)								\
-	    for(k = 0; k < n; k++) {						\
-		double t = z[k+ (I)*n]; z[k+ (I)*n] = z[k+ (J)*n]; z[k+ (J)*n] = t; \
-	    }
+	    /* ---- new code by Martin Maechler ----- */
+
+#define SWAP_ROW(I,J) F77_CALL(dswap)(&n, &z[(I)], &n, &z[(J)], &n)
+
+#define SWAP_COL(I,J) F77_CALL(dswap)(&n, &z[(I)*n], &i1, &z[(J)*n], &i1)
 
 #define RE_PERMUTE(I)				\
-	    int k, p_I = (int) (perm[I]) - 1;	\
+	    int p_I = (int) (perm[I]) - 1;	\
 	    SWAP_COL(I, p_I);			\
 	    SWAP_ROW(I, p_I)
 
