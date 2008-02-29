@@ -11,8 +11,8 @@
 }
 \usage{
 expm(x, method = c("Ward77", "Pade", "Taylor", "PadeO", "TaylorO",
-                   "Eigen", "R_Pade", "R_Ward77"),
-     order = 8, trySym = TRUE)
+                   "Eigen", "R_Pade", "R_Ward77", "hybrid_Eigen_Ward"),
+     order = 8, trySym = TRUE, tol = .Machine$double.eps)
 }
 \arguments{
   \item{x}{a square matrix.}
@@ -36,6 +36,8 @@ expm(x, method = c("Ward77", "Pade", "Taylor", "PadeO", "TaylorO",
   \item{trySym}{logical indicating if \code{method = "Eigen"} should use
     \code{\link{isSymmetric}(x)} and take advantage for (almost)
     symmetric matrices.}
+  \item{tol}{a given tolerance used to check if \code{x} is computationally singular when
+    \code{method = "hybrid_Eigen_Ward"}.}
 }
 \details{
   The exponential of a matrix is defined as the infinite Taylor series

@@ -42,8 +42,8 @@ expm.s.Pade.s <- function(x, order, n=nrow(x)) {
 
 expm <- function(x, method = c("Ward77",
                     "Pade", "Taylor", "PadeO", "TaylorO",
-                    "Eigen", "R_Pade", "R_Ward77"),
-		 order = 8, trySym = TRUE)
+                    "Eigen", "R_Pade", "R_Ward77", "hybrid_Eigen_Ward"),
+		 order = 8, trySym = TRUE, tol = .Machine$double.eps)
 ## NOTA BENE:  Matlab uses order = 6  !!!
 {
     if (!is.matrix(x))
@@ -64,6 +64,12 @@ expm <- function(x, method = c("Ward77",
         Vi <- if(isSym) t(V) else solve(V)
         Re(V %*% (    exp(z$values)   *  Vi)) ## ==
         ##(V %*% diag(exp(z$values)) %*% Vi)
+    }
+    else if (method == "hybrid_Eigen_Ward") {
+    ## AUTHOR: Christophe Dutang   
+    ## matrix exponential using eigenvalues / spectral decomposition and
+    ## Ward(1977) algorithm if x is numerically non diagonalisable    
+        .Call("do_expm_eigen", x, tol)    
     }
     else if (method == "R_Pade") { ## use scaling + Pade + squaring with R code:
 
