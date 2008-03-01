@@ -11,8 +11,9 @@
 }
 \usage{
 expm(x, method = c("Ward77", "Pade", "Taylor", "PadeO", "TaylorO",
-                   "Eigen", "R_Pade", "R_Ward77", "hybrid_Eigen_Ward"),
-     order = 8, trySym = TRUE, tol = .Machine$double.eps)
+                   "R_Eigen", "R_Pade", "R_Ward77", "hybrid_Eigen_Ward"),
+     order = 8, trySym = TRUE, tol = .Machine$double.eps,
+     preconditioning = c("2bal", "1bal", "buggy"))
 }
 \arguments{
   \item{x}{a square matrix.}
@@ -31,13 +32,18 @@ expm(x, method = c("Ward77", "Pade", "Taylor", "PadeO", "TaylorO",
     machine precision (and slightly on \code{x}) but for the current
     double precision arithmetic, one recommendation %% and Matlab !!!
     uses \code{order = 6} unconditionally;\cr
+    %% NOTA BENE:  Matlab uses order = 6  !!!
     our default, \code{8}, is from Ward(1977, p.606)'s recommendation.
   }
-  \item{trySym}{logical indicating if \code{method = "Eigen"} should use
+  \item{trySym}{logical indicating if \code{method = "R_Eigen"} should use
     \code{\link{isSymmetric}(x)} and take advantage for (almost)
     symmetric matrices.}
-  \item{tol}{a given tolerance used to check if \code{x} is computationally singular when
-    \code{method = "hybrid_Eigen_Ward"}.}
+  \item{tol}{a given tolerance used to check if \code{x} is
+    computationally singular when \code{method = "hybrid_Eigen_Ward"}.}
+  \item{preconditioning}{a string specifying which implementation of
+    Ward(1977) should be used when \code{method = "Ward77"}.
+    %%% FIXME explain more
+  }
 }
 \details{
   The exponential of a matrix is defined as the infinite Taylor series
@@ -102,9 +108,9 @@ expm(test1, method="Pade")
 ## [3,] 127.78108552318204 163.67960172318047 111.96810624637124
 ## -- these agree with ward (1977, p608)
 
-## Compare with the naive "Eigen" method:
+## Compare with the naive "R_Eigen" method:
 try(
-expm(test1, method="Eigen")
+expm(test1, method="R_Eigen")
 ) ## now gives an error from solve !
 ##
 ## older result was
@@ -129,7 +135,7 @@ expm(test2, method="Pade")
 ##[2,] -18231880972009852  60605228702227024 101291842930256144
 ##[3,] -30475770808580840 101291842930256144 169294411240859072
 ## -- which agrees with Ward (1977) to 13 significant figures
-expm(test2, method="Eigen")
+expm(test2, method="R_Eigen")
 ##                   [,1]               [,2]               [,3]
 ##[1,]   5496313853692405 -18231880972009100 -30475770808580196
 ##[2,] -18231880972009160  60605228702221760 101291842930249376
@@ -149,7 +155,7 @@ expm(test3, method="Pade")
 ##[2,] -5.6325707997970271 1.47151775847745725 0.40600584351567010
 ##[3,] -4.9349383260294299 1.10363831731417195 0.54134112675653534
 ## -- agrees to 10dp with Ward (1977), p608.
-expm(test3, method="Eigen")
+expm(test3, method="R_Eigen")
 ##                   [,1]               [,2]                [,3]
 ##[1,] -1.509644158796182 0.3678794391103086 0.13533528117547022
 ##[2,] -5.632570799902948 1.4715177585023838 0.40600584352641989
@@ -172,7 +178,7 @@ test4 <-
                 0, 0, 0, 0, 0, 0, 0, 0, 1, 0),
     .Dim = c(10, 10))
 attributes(expm(test4, method="Pade"))
-max(abs(expm(test4, method="Pade") - expm(test4, method="Eigen")))
+max(abs(expm(test4, method="Pade") - expm(test4, method="R_Eigen")))
 ##[1] 8.746826694186494e-08
 ## -- here mexp2 is accurate only to 7 d.p., whereas mexp
 ##    is correct to at least 14 d.p.

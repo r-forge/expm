@@ -32,7 +32,7 @@ stopifnot(all.equal(m1.t, m1,  check.attrib=FALSE, tol = 1e-13),
           all.equal(m1.t, expm(test1,"R_Ward77"),  tol = 1e-13))
 ## -- these agree with ward (1977, p608)
 ##
-m1.2 <- try( expm(test1, "Eigen") ) ## 32-bit: gives an error from solve; 64-bit "ok"
+m1.2 <- try( expm(test1, "R_Eigen") ) ## 32-bit: gives an error from solve; 64-bit "ok"
 if(!inherits(m1.2, "try-error")) {
     stopifnot(all.equal(m1.t, m1.2, check.attrib=FALSE))
     ## but it's less accurate:
@@ -100,7 +100,7 @@ stopifnot(all.equal(m3.t, m3,           check.attrib=FALSE, tol = 1e-11),
           all.equal(m3.t, m3T,          check.attrib=FALSE, tol = 1e-11),
           all.equal(m3.t, m3O,          check.attrib=FALSE, tol = 1e-11),
           all.equal(m3.t, m3TO,         check.attrib=FALSE, tol = 1e-11),
-          all.equal(m3.t, expm(test3,"Eigen"), tol = 1e-11),
+          all.equal(m3.t, expm(test3,"R_Eigen"), tol = 1e-11),
           all.equal(m3.t, expm(test3,"Ward77"), tol = 1e-11),
           all.equal(m3.t, expm(test3,"R_Ward"), tol = 1e-11),
           all.equal(m3.t, expm(test3,"R_Pade"), tol = 1e-11),
@@ -137,6 +137,6 @@ stopifnot(all.equal(m4  [,10], 1/gamma(10:1), tol=1e-14),
           all.equal(m4, expm(test4,"Ward77"), check.attrib=FALSE, tol = 1e-14),
           all.equal(m4, expm(test4,"R_Ward"), check.attrib=FALSE, tol = 1e-14),
           all.equal(m4, expm(test4,"R_Pade"), check.attrib=FALSE, tol = 1e-14),
-          max(abs(m4 - expm(test4,"Eigen"))) < 1e-7)
+          max(abs(m4 - expm(test4,"R_Eigen"))) < 1e-7)
 ## here expm(., EV ) is accurate only to 7 d.p., whereas
 ##      expm(.,Pade) is correct to at least 14 d.p.

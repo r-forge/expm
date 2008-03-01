@@ -90,8 +90,6 @@ uniqEntries <- function(m, diagS = FALSE)
 }
 
 
-
-
 ## This needs "Matrix" package
 rMat <- function(n, R_FUN = rnorm,
                  rcondMin = 1.4 * n ^ -1.6226,

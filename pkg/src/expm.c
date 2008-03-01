@@ -46,7 +46,7 @@ const static double padec88 [] =
  * expm() of package Matrix, which is itself based on the function of
  * the same name in Octave.
  */
-void expm(double *x, int n, double *z)
+void expm(double *x, int n, double *z, precond_type precond_kind)
 {
     if (n == 1)
 	z[0] = exp(x[0]);		/* scalar exponential */
@@ -62,8 +62,9 @@ void expm(double *x, int n, double *z)
 
 	/* Arrays */
 	int *pivot    = (int *) R_alloc(n, sizeof(int)); /* pivot vector */
-	double *perm  = (double *) R_alloc(n, sizeof(double)); /* permutation array */
-	double *scale = (double *) R_alloc(n, sizeof(double)); /* scale array */
+	double *scale; /* scale array */
+	double *perm  = (double *) R_alloc(n, sizeof(double));/* permutation/sc array */
+
 	double *work  = (double *) R_alloc(nsqr, sizeof(double)); /* workspace array */
 	double *npp   = (double *) R_alloc(nsqr, sizeof(double)); /* num. power Pade */
 	double *dpp   = (double *) R_alloc(nsqr, sizeof(double)); /* denom. power Pade */
@@ -88,24 +89,38 @@ void expm(double *x, int n, double *z)
 		z[i * np1] -= trshift;
 
 	/* Step 2 of preconditioning: balancing with dgebal. */
-	if (is_uppertri) {
-	    /* no need to permute if x is upper triangular */
-	    ilo = 1;
-	    ihi = n;
+	if(precond_kind == Ward_2 || precond_kind == Ward_buggy_octave) {
+	    if (is_uppertri) {
+		/* no need to permute if x is upper triangular */
+		ilo = 1;
+		ihi = n;
+	    }
+	    else {
+		F77_CALL(dgebal)("P", &n, z, &n, &ilo, &ihi, perm, &info);
+		if (info)
+		    error(_("LAPACK routine dgebal returned info code %d when permuting"), info);
+	    }
+	    scale = (double *) R_alloc(n, sizeof(double));
+	    F77_CALL(dgebal)("S", &n, z, &n, &iloscal, &ihiscal, scale, &info);
+	    if (info)
+		error(_("LAPACK routine dgebal returned info code %d when scaling"), info);
+	}
+	else if(precond_kind == Ward_1) {
+
+	    F77_CALL(dgebal)("B", &n, z, &n, &ilo, &ihi, perm, &info);
+	    if (info)
+		error(_("LAPACK' dgebal(\"B\",.) returned info code %d"), info);
+
 	}
 	else {
-	    F77_CALL(dgebal)("P", &n, z, &n, &ilo, &ihi, perm, &info);
-	    if (info)
-		error(_("LAPACK routine dgebal returned info code %d when permuting"), info);
+	    error(_("invalid 'precond_kind: %d"), precond_kind);
 	}
-	F77_CALL(dgebal)("S", &n, z, &n, &iloscal, &ihiscal, scale, &info);
-	if (info)
-	    error(_("LAPACK routine dgebal returned info code %d when scaling"), info);
+
 
 	/* Step 3 of preconditioning: Scaling according to infinity
 	 * norm (a priori always needed). */
 	infnorm = F77_CALL(dlange)("I", &n, &n, z, &n, work);
-	sqrpowscal = (infnorm > 0) ? imax2((int) 1 + log(infnorm)/log(2.0), 0) : 0;
+	sqrpowscal = (infnorm > 0) ? imax2((int) 1 + log(infnorm)/M_LN2, 0) : 0;
 	if (sqrpowscal > 0) {
 	    double scalefactor = R_pow_di(2, sqrpowscal);
 	    for (i = 0; i < nsqr; i++)
@@ -167,36 +182,88 @@ void expm(double *x, int n, double *z)
 	 * ------------------ Note that dgebak() seems *not* applicable */
 
 	/* Step 2 a)  apply inverse scaling */
-	for (j = 0; j < n; j++)
-	    for (i = 0; i < n; i++)
-		z[i + j * n] *= scale[i]/scale[j];
+	if(precond_kind == Ward_2 || precond_kind == Ward_buggy_octave) {
+	    for (j = 0; j < n; j++)
+		for (i = 0; i < n; i++)
+		    z[i + j * n] *= scale[i]/scale[j];
+	}
+	else if(precond_kind == Ward_1) { /* here, perm[ilo:ihi] contains scale[] */
+	    for (j = 0; j < n; j++) {
+		double sj = ((ilo-1 <= j && j < ihi)? perm[j] : 1.);
+		for (i = 0; i < ilo-1; i++)	z[i + j * n] /= sj;
+		for (i = ilo-1; i < ihi; i++)	z[i + j * n] *= perm[i]/sj;
+		for (i = ihi+1; i < n; i++)	z[i + j * n] /= sj;
+	    }
+	}
 
 	/* 2 b) Inverse permutation  (if not the identity permutation) */
 
 	if (ilo != 1 || ihi != n) {
 
-	    /* ---- new code by Martin Maechler ----- */
+	    if(precond_kind == Ward_buggy_octave) {
+
+		/* inverse permutation vector */
+		int *invP  = (int *) R_alloc(n, sizeof(int));
+
+		/* balancing permutation vector */
+		for (i = 0; i < n; i++)
+		    invP[i] = i;	/* identity permutation */
+
+		/* leading permutations applied in forward order */
+		for (i = 0; i < (ilo - 1); i++)
+		{
+		    int p_i = (int) (perm[i]) - 1;
+		    int tmp = invP[i]; invP[i] = invP[p_i]; invP[p_i] = tmp;
+		}
+
+		/* trailing permutations applied in reverse order */
+		for (i = n - 1; i >= ihi; i--)
+		{
+		    int p_i = (int) (perm[i]) - 1;
+		    int tmp = invP[i]; invP[i] = invP[p_i]; invP[p_i] = tmp;
+		}
+
+		/* construct inverse balancing permutation vector */
+		Memcpy(pivot, invP, n);
+		for (i = 0; i < n; i++)
+		    invP[pivot[i]] = i;
+
+		/* apply inverse permutation */
+		Memcpy(work, z, nsqr);
+		for (j = 0; j < n; j++)
+		    for (i = 0; i < n; i++)
+			z[i + j * n] = work[invP[i] + invP[j] * n];
+
+	    }
+	    else if(precond_kind == Ward_2 || precond_kind == Ward_1) {
+
+		/* ---- new code by Martin Maechler ----- */
 
 #define SWAP_ROW(I,J) F77_CALL(dswap)(&n, &z[(I)], &n, &z[(J)], &n)
 
 #define SWAP_COL(I,J) F77_CALL(dswap)(&n, &z[(I)*n], &i1, &z[(J)*n], &i1)
 
 #define RE_PERMUTE(I)				\
-	    int p_I = (int) (perm[I]) - 1;	\
-	    SWAP_COL(I, p_I);			\
-	    SWAP_ROW(I, p_I)
+		int p_I = (int) (perm[I]) - 1;	\
+		SWAP_COL(I, p_I);		\
+		SWAP_ROW(I, p_I)
 
-	    /* reversion of "leading permutations" : in reverse order */
-	    for (i = (ilo - 1) - 1; i >= 0; i--) {
-		RE_PERMUTE(i);
-	    }
+		/* reversion of "leading permutations" : in reverse order */
+		for (i = (ilo - 1) - 1; i >= 0; i--) {
+		    RE_PERMUTE(i);
+		}
 
-	    /* reversion of "trailing permutations" : applied in forward order */
-	    for (i = (ihi + 1) - 1; i < n; i++) {
-		RE_PERMUTE(i);
+		/* reversion of "trailing permutations" : applied in forward order */
+		for (i = (ihi + 1) - 1; i < n; i++) {
+		    RE_PERMUTE(i);
+		}
+
 	    }
+/* 	    else if(precond_kind == Ward_1) { */
+
+/* 	    } */
+
 	}
-
 	/* Preconditioning 1: Trace normalization */
 	if (trshift > 0)
 	{
@@ -209,14 +276,25 @@ void expm(double *x, int n, double *z)
 }
 
 /* Main function, the only one used by .External(). */
-SEXP do_expm(SEXP x)
+SEXP do_expm(SEXP x, SEXP kind)
 {
     SEXP dims, z;
     int n;
     double *rx = REAL(x), *rz;
+    const char *ch_kind = CHAR(asChar(kind));
+    precond_type PC_kind = Ward_2 /* -Wall */;
 
     if (!isNumeric(x) || !isMatrix(x))
 	error(_("invalid argument: not a numeric matrix"));
+
+    if(!strcmp(ch_kind, "Ward77")) {
+	PC_kind = Ward_2;
+    } else if(!strcmp(ch_kind, "buggy_Ward77")) {
+	PC_kind = Ward_buggy_octave;
+    } else if(!strcmp(ch_kind, "Ward77_1")) {
+	PC_kind = Ward_1;
+    } else
+	error(_("invalid 'kind' argument: %s\n"), ch_kind);
 
     dims = getAttrib(x, R_DimSymbol);
     n = INTEGER(dims)[0];
@@ -228,8 +306,8 @@ SEXP do_expm(SEXP x)
     PROTECT(z = allocMatrix(REALSXP, n, n));
     rz = REAL(z);
 
-    expm(rx, n, rz);
-
+    expm(rx, n, rz, PC_kind);
+/*  ---- */
     setAttrib(z, R_DimNamesSymbol, getAttrib(x, R_DimNamesSymbol));
 
     UNPROTECT(1);

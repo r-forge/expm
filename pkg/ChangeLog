@@ -1,3 +1,18 @@
+2008-03-01  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* R/expm.R (expm): rename "Eigen" to "R_Eigen"
+
+	* src/expm.c (expm): get "1bal" case right.
+	* tests/compare-bal-expm.R: minimal testing of "2bal" vs "1bal"
+
+2008-02-29  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* src/expm.c (expm): second argument 'precond_kind'
+
+	* src/expm.h: update for new second argument
+
+	* src/expm-eigen.h: implement workaround for Lapack.h's zlange() typo
+
 2008-02-27  Martin Maechler  <maechler@stat.math.ethz.ch>
 
 	* DESCRIPTION (Version): 0.9-1  -- new version for the occasion

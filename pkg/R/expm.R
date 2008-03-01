@@ -42,17 +42,25 @@ expm.s.Pade.s <- function(x, order, n=nrow(x)) {
 
 expm <- function(x, method = c("Ward77",
                     "Pade", "Taylor", "PadeO", "TaylorO",
-                    "Eigen", "R_Pade", "R_Ward77", "hybrid_Eigen_Ward"),
-		 order = 8, trySym = TRUE, tol = .Machine$double.eps)
-## NOTA BENE:  Matlab uses order = 6  !!!
+                    "R_Eigen", "R_Pade", "R_Ward77", "hybrid_Eigen_Ward"),
+		 order = 8,
+                 trySym = TRUE, tol = .Machine$double.eps,
+                 preconditioning = c("2bal", "1bal", "buggy"))
 {
     if (!is.matrix(x))
         stop("invalid (non-matrix) argument")
     method <- match.arg(method)
-    if(method == "Ward77")
+    if(method == "Ward77") {
 	## AUTHORS: Christophe Dutang, Vincent Goulet <vincent.goulet@act.ulaval.ca>
-	.Call("do_expm", x)
-    else if (method == "Eigen") {
+        ##        built on "Matrix" package, built on 'octave' code
+        ##        Martin Maechler, for the preconditioning etc
+	switch(match.arg(preconditioning),
+	       "2bal" = .Call(do_expm, x, "Ward77"),
+	       "1bal" = .Call(do_expm, x, "Ward77_1"),
+	       "buggy"= .Call(do_expm, x, "buggy_Ward77"),
+	       stop("invalid 'preconditioning'"))
+    }
+    else if (method == "R_Eigen") {
 	## matrix exponential using eigenvalues / spectral decomposition :
         ## ==  Dubious Way 'Method 14' : is
         ## good for 'symmetric' or 'orthogonal' (or other 'normal' : A'A = AA' ):
@@ -66,10 +74,10 @@ expm <- function(x, method = c("Ward77",
         ##(V %*% diag(exp(z$values)) %*% Vi)
     }
     else if (method == "hybrid_Eigen_Ward") {
-    ## AUTHOR: Christophe Dutang   
+    ## AUTHOR: Christophe Dutang
     ## matrix exponential using eigenvalues / spectral decomposition and
-    ## Ward(1977) algorithm if x is numerically non diagonalisable    
-        .Call("do_expm_eigen", x, tol)    
+    ## Ward(1977) algorithm if x is numerically non diagonalisable
+        .Call("do_expm_eigen", x, tol)
     }
     else if (method == "R_Pade") { ## use scaling + Pade + squaring with R code:
 

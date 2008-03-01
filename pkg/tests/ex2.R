@@ -51,11 +51,16 @@ all.equal(mA2, mA2.T, tol=1e-14)#-> 3.2e-12  {MM: I think that's pretty good}
 A3 <- rbind(c(-1, 1),
             c(0, -1))
 (mA3 <- expm(A3, method="Pade"))
-assertError(expm(mA3, method="Eigen"))
+assertError(expm(mA3, method="R_Eigen"))
 em1 <- exp(-1)
 stopifnot(all.equal(mA3, ## and the exact solution:
                     matrix(c(em1, 0, em1, em1), 2, 2),
                     check.attrib = FALSE, tol = 1e-14))
+
+## using 'eps' instead of 0 :
+## ---> see m2ex3() etc in ./exact-ex.R
+
+
 ## --- 4 ---
 ## Here, some version of do_expm() failed:
 (m <- matrix(c(0,2:0),2))
