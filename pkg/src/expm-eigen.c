@@ -39,15 +39,17 @@ void expm_eigen(double *x, int n, double *z, double tol)
 
         /* Arrays */
         int *ipiv = (int *) R_alloc(n, sizeof(int)); /* permutation vector */
+        int *rworksing = (int *) R_alloc(n, sizeof(int)); /* working vector to test the singularity */
         double *left, *right, *workdiag; /* left and right eigenvectors and workspace for diagonalisation */
         double *wR = (double *) R_alloc(n, sizeof(double)); /* real part of eigenvalues */
         double *wI = (double *) R_alloc(n, sizeof(double)); /* imaginary part of eigenvalues */
-        double *rworksing = (double *) R_alloc(2*n, sizeof(double)); /* working vector to test the singularity */
+        double *worksing = (double *) R_alloc(4*n, sizeof(double)); /* workspace to test the singularity */
+        double *part = (double *) R_alloc(nsqr, sizeof(double)); 
         Rcomplex *eigvect = (Rcomplex *) R_alloc(nsqr, sizeof(Rcomplex)); /* (right) eigenvectors matrix */
         Rcomplex *eigvectinv = (Rcomplex *) R_alloc(nsqr, sizeof(Rcomplex)); /* its inverse */
         Rcomplex *expeigval; /* complex matrix diag(exp(eigenvalues)) */
         Rcomplex *ctmp = (Rcomplex *) R_alloc(nsqr, sizeof(Rcomplex)); /* temp working variable */
-        Rcomplex *worksing = (Rcomplex *) R_alloc(2*n, sizeof(Rcomplex)); /* workspace to test the singularity */
+        
 
         R_CheckStack();
 
@@ -72,14 +74,6 @@ void expm_eigen(double *x, int n, double *z, double tol)
         F77_CALL(dgeev)(jobVL, jobVR, &n, z, &n, wR, wI, left, &n, right, &n, workdiag, &lwork, &info);
         if (info != 0)
             error(_("error code %d from Lapack routine dgeev"), info);
-
-        /*Rprintf("eigen value\n");
-        for(i = 0; i < n; i++)
-            Rprintf("%f +i* %f\n", wR[i], wI[i]);
-
-        for (i = 0; i < n; i++)
-            for (j = 0; j < n; j++)
-                Rprintf("%f\n", right[i * n + j]);*/
 
         /* try to invert the eigenvectors matrix */
         /* 1 - build the Rcomplex matrix with eigenvectors */
@@ -119,15 +113,6 @@ void expm_eigen(double *x, int n, double *z, double tol)
             }
         }
 
-        /*Rprintf("eigvect\n");
-        for (i = 0; i < n; i++)
-            for (j = 0; j < n; j++)
-                Rprintf("%.10f +i*%.10f\n", eigvect[i * n + j].r, eigvect[i * n + j].i);
-        Rprintf("eigvectinv\n");
-        for (i = 0; i < n; i++)
-            for (j = 0; j < n; j++)
-                Rprintf("%.10f +i*%.10f\n", eigvectinv[i * n + j].r, eigvectinv[i * n + j].i);*/
-
         /* 2 - store the matrix eigvect (because function zgesv will change it) */
         Memcpy(ctmp, eigvect, nsqr);
 
@@ -142,23 +127,36 @@ void expm_eigen(double *x, int n, double *z, double tol)
             error(_("argument %d of Lapack routine dgesv had invalid value"), -info);
         if (info == 0)
             is_diag = 1;
+        
+        /* check if matrix eigvectinv is numerically singular */
+        if (is_diag)
+        { 
+            //real part
+            for (i = 0; i < n; i++)
+                for (j = 0; j < n; j++)
+                    part[i * n + j] = eigvectinv[i * n +j].r;
+            
+            /* 1 - compute the one norm of the complex matrix eigvect */
+            onenorm = F77_CALL(dlange)("1", &n, &n, part, &n, (double*) NULL);
 
-        /* check if matrix eigvect is numerically singular */
-        /* 1 - compute the one norm of the complex matrix eigvect */
-        onenorm = F77_CALL(zlange)("1", &n, &n, eigvect, &n, (double*) NULL);
+            /* 2 - estimates the reciprocal of the condition number of the one norm of eigvect */
+            F77_CALL(dgecon)("1", &n, part, &n, &onenorm, &rcond, worksing, rworksing, &info);
 
-        /* 2 - estimates the reciprocal of the condition number of the one norm of eigvect */
-
-	/* This is *NOT* part of R's LAPACK : */
-
-/*         F77_CALL(zgecon)("1", &n, eigvect, &n, &onenorm, &rcond, */
-/* 			 worksing, rworksing, &info); */
-
-/*         if (rcond < tol) */
-/*         { */
-/*             Rprintf("computationally singular\n"); */
-/*             is_diag=0; */
-/*         } */
+            if (rcond < tol) is_diag=0; 
+            /*
+            //imaginary part
+            for (i = 0; i < n; i++)
+                for (j = 0; j < n; j++)
+                    part[i * n + j] = eigvectinv[i * n +j].i;
+            
+            onenorm = F77_CALL(dlange)("1", &n, &n, part, &n, (double*) NULL);
+            
+            F77_CALL(dgecon)("1", &n, part, &n, &onenorm, &rcond, worksing, rworksing, &info);
+            
+            if (rcond < tol) is_diag=0; */
+        }
+        
+        Rprintf("is diag final %d\n", is_diag);
 
         if (is_diag)
         {
