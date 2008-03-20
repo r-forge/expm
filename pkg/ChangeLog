@@ -1,3 +1,9 @@
+2008-03-20  Vincent Goulet  <vincent.goulet@act.ulaval.ca>
+
+	* New function matpow() as alias to operator %^%.
+	* R/matpow.R: miscellaneous fixes and prettyfication of comments
+
+
 2008-03-01  Martin Maechler  <maechler@stat.math.ethz.ch>
 
 	* R/expm.R (expm): rename "Eigen" to "R_Eigen"
@@ -35,5 +41,3 @@
 	* src/mexp-common.f
 	* src/matrexp.f
 	* src/matrexpO.f
-
-

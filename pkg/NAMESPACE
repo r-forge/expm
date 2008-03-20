@@ -3,5 +3,5 @@ useDynLib(expm, .registration = TRUE)
 
 ### Exports
 export(expm)
-export("%^%")
+export("%^%", matpow)
 export(dgebal)
