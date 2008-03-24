@@ -10,35 +10,34 @@
 /* .Call() this from R : */
 SEXP R_matpow(SEXP x, SEXP k)
 {
-    if (!isMatrix(x))
+    if(!isMatrix(x)) {
 	error(_("not a matrix"));
-
-    SEXP dims = getAttrib(x, R_DimSymbol), z;
-    int n = INTEGER(dims)[0],
-	ktmp = INTEGER(k)[0]; /* need copy, as it is altered in matpow() */
-
-/*     if (!isNumeric(x)) */
-/* 	PROTECT(x = coerceVector(x, REALSXP)); /\* may give error... *\/ */
-/*     else */
-/* 	PROTECT(x = duplicate(x)); /\* since matpow() will alter it *\/ */
-
-    PROTECT(x = coerceVector(x, REALSXP)); /* coercion to numeric */
-
-    if (n != INTEGER(dims)[1]) {
-	UNPROTECT(1);
-	error(_("non-square matrix"));
+	/*-Wall */ return R_NilValue;
     }
-    if (n == 0)
-	return(allocMatrix(REALSXP, 0, 0));
+    else {
+	SEXP dims = getAttrib(x, R_DimSymbol), z;
+	int n = INTEGER(dims)[0],
+	    ktmp = INTEGER(k)[0]; /* need copy, as it is altered in matpow() */
 
-    PROTECT(z = allocMatrix(REALSXP, n, n));
-    setAttrib(z, R_DimNamesSymbol,
-	      getAttrib(x, R_DimNamesSymbol));
+	PROTECT(x = coerceVector(x, REALSXP)); /* coercion to numeric */
 
-    matpow(REAL(x), n, ktmp, REAL(z));
+	if (n != INTEGER(dims)[1]) {
+	    UNPROTECT(1);
+	    error(_("non-square matrix"));
+	}
+	if (n == 0) {
+	    UNPROTECT(1);
+	    return(allocMatrix(REALSXP, 0, 0));
+	}
+	PROTECT(z = allocMatrix(REALSXP, n, n));
+	setAttrib(z, R_DimNamesSymbol,
+		  getAttrib(x, R_DimNamesSymbol));
 
-    UNPROTECT(2);
-    return z;
+	matpow(REAL(x), n, ktmp, REAL(z));
+
+	UNPROTECT(2);
+	return z;
+    }
 }
 
 /* Compute z := x %^% k, x an (n x n) square "matrix" in column-order;
