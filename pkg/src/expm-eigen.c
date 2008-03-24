@@ -17,9 +17,8 @@
  *  <Rsource>/src/modules/lapack/lapack.c, used in eigen()
  */
 
-
-
 #include "expm-eigen.h"
+
 
 void expm_eigen(double *x, int n, double *z, double tol)
 {
@@ -27,15 +26,15 @@ void expm_eigen(double *x, int n, double *z, double tol)
         z[0] = exp(x[0]);		/* scalar exponential */
     else
     {
-        /* Constants */
+        const char *transa = "N";
+        const char *one = "1";
+        const int nsqr = n * n, np1 = n + 1;
+
+        const Rcomplex cone = {1., 0.}, czero = {0., 0.};
         int i, j;
-        int nsqr = n * n, np1 = n + 1;
         int info, lwork, is_conjug, is_diag;
         double onenorm, rcond, tmp;
         char jobVL[1], jobVR[1];
-        char *transa = "N";
-        char *one = "1";
-        Rcomplex cone, czero;
 
         /* Arrays */
         int *ipiv = (int *) R_alloc(n, sizeof(int)); /* permutation vector */
@@ -51,8 +50,6 @@ void expm_eigen(double *x, int n, double *z, double tol)
         Rcomplex *ctmp = (Rcomplex *) R_alloc(nsqr, sizeof(Rcomplex)); /* temp working variable */
         
 
-        R_CheckStack();
-
         Memcpy(z, x, nsqr);
 
         /* Test if x is diagonalisable by computing its eigenvalues and (right) eigenvectors */
@@ -64,14 +61,16 @@ void expm_eigen(double *x, int n, double *z, double tol)
 
         /* 1 - ask for optimal size of work array */
         lwork = -1;
-        F77_CALL(dgeev)(jobVL, jobVR, &n, z, &n, wR, wI, left, &n, right, &n, &tmp, &lwork, &info);
+        F77_CALL(dgeev)(jobVL, jobVR, &n, z, &n, wR, wI,
+			left, &n, right, &n, &tmp, &lwork, &info);
         if (info != 0)
             error(_("error code %d from Lapack routine dgeev"), info);
         lwork = (int) tmp;
         workdiag = (double *) R_alloc(lwork, sizeof(double));
 
         /* 2 - compute eigenvalues and (right) eigenvectors */
-        F77_CALL(dgeev)(jobVL, jobVR, &n, z, &n, wR, wI, left, &n, right, &n, workdiag, &lwork, &info);
+        F77_CALL(dgeev)(jobVL, jobVR, &n, z, &n, wR, wI,
+			left, &n, right, &n, workdiag, &lwork, &info);
         if (info != 0)
             error(_("error code %d from Lapack routine dgeev"), info);
 
@@ -204,9 +203,9 @@ void expm_eigen(double *x, int n, double *z, double tol)
                 for (j = 0; j < n; j++)
                     Rprintf("%.10f +i*%.10f\n", eigvectinv[i * n + j].r, eigvectinv[i * n + j].i);*/
 
-            cone.r = 1.0; cone.i = czero.r = czero.i = 0.0;
             /* 3 - compute (complex) matrix product: ctmp <- eigvect * expeigval */
-            F77_CALL(zgemm)(transa, transa, &n, &n, &n, &cone, eigvect, &n, expeigval, &n, &czero, ctmp, &n);
+            F77_CALL(zgemm)(transa, transa, &n, &n, &n, &cone, eigvect, &n,
+			    expeigval, &n, &czero, ctmp, &n);
             /*
             Rprintf("eigvect * expeigval\n");
             for (i = 0; i < n; i++)
@@ -214,7 +213,8 @@ void expm_eigen(double *x, int n, double *z, double tol)
                     Rprintf("%.10f +i*%.10f\n", ctmp[i * n + j].r, ctmp[i * n + j].i);*/
 
             /* 4 - compute (complex) matrix product: expeigval <- ctmp * eigvectinv */
-            F77_CALL(zgemm)(transa, transa, &n, &n, &n, &cone, ctmp, &n, eigvectinv, &n, &czero, expeigval, &n);
+            F77_CALL(zgemm)(transa, transa, &n, &n, &n, &cone, ctmp, &n,
+			    eigvectinv, &n, &czero, expeigval, &n);
             /*
             Rprintf(" ctmp * eigvectinv\n");
             for (i = 0; i < n; i++)
