@@ -1,6 +1,6 @@
 \name{matpow}
-\alias{matpow}
 \alias{\%^\%}
+\alias{matpow}
 \title{Matrix Power}
 \description{
   Compute the \eqn{k}-th power of a matrix. Whereas \code{x^k} computes
@@ -8,7 +8,6 @@
   1} matrix multiplications, \code{x \%*\% x \%*\% ... \%*\% x}.
 }
 \usage{
-matpow(x, k)
 x \%^\% k
 }
 \arguments{
@@ -16,6 +15,8 @@ x \%^\% k
   \item{k}{an integer, \eqn{k \ge 0}{k >= 0}}.
 }
 \details{
+  Argument \eqn{k} is coerced to integer using \code{\link{as.integer}}.
+
   The algorithm uses \eqn{O(log_2(k))}{O(log2(k))} matrix
   multiplications.
 }

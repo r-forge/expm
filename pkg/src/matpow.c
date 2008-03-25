@@ -32,13 +32,13 @@ SEXP R_matpow(SEXP x, SEXP k)
 	PROTECT(z = allocMatrix(REALSXP, n, n));
 	setAttrib(z, R_DimNamesSymbol,
 		  getAttrib(x, R_DimNamesSymbol));
-
 	matpow(REAL(x), n, ktmp, REAL(z));
 
 	UNPROTECT(2);
 	return z;
     }
 }
+
 
 /* Compute z := x %^% k, x an (n x n) square "matrix" in column-order;
  * NB: x will be altered! The caller must make a copy if needed */
@@ -52,7 +52,7 @@ void matpow(double *x, int n, int k, double *z)
 	return;
     }
     else if (k < 0) {
-	error(_("power must be a positive integer"));
+	error(_("power must be a positive integer; use solve() directly for negative powers"));
     }
     else { /* k >= 1 */
 	static const char *transa = "N";
