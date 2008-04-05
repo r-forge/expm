@@ -19,16 +19,12 @@ SEXP R_matpow(SEXP x, SEXP k)
 	int n = INTEGER(dims)[0],
 	    ktmp = INTEGER(k)[0]; /* need copy, as it is altered in matpow() */
 
-	PROTECT(x = coerceVector(x, REALSXP)); /* coercion to numeric */
-
-	if (n != INTEGER(dims)[1]) {
-	    UNPROTECT(1);
+	if (n != INTEGER(dims)[1])
 	    error(_("non-square matrix"));
-	}
-	if (n == 0) {
-	    UNPROTECT(1);
+	if (n == 0)
 	    return(allocMatrix(REALSXP, 0, 0));
-	}
+
+	PROTECT(x = coerceVector(x, REALSXP)); /* coercion to numeric */
 	PROTECT(z = allocMatrix(REALSXP, n, n));
 	setAttrib(z, R_DimNamesSymbol,
 		  getAttrib(x, R_DimNamesSymbol));
@@ -63,8 +59,8 @@ void matpow(double *x, int n, int k, double *z)
 
 	/* Take powers in multiples of 2 until there is only one
 	 * product left to make. That is, if k = 5, compute (x * x),
-	 * then ((x * x) * (x * x)) and finally ((x * x) * (x * x)) *
-	 * x. */
+	 * then ((x * x) * (x * x)) and finally ((x * x) * (x * x)) * x.
+	 */
 	Memcpy(z, x, (size_t) nSqr);
 
 	k--;
