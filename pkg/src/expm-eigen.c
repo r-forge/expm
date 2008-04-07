@@ -100,7 +100,6 @@ void expm_eigen(double *x, int n, double *z, double tol)
                     }
                 }
                 /* real eigenvalues */
-                        //Rprintf("%d-%d-%d\n",i,j,is_conjug);
                 if(!is_conjug)
                 {
                     eigvect[i * n + j].r = right[i * n + j];
@@ -130,32 +129,23 @@ void expm_eigen(double *x, int n, double *z, double tol)
         /* check if matrix eigvectinv is numerically singular */
         if (is_diag)
         { 
+            /* compute the condition number ONLY of the real part.
+             * wait for a version of R where zgecon is included to compute
+             * the condition number of the whole matrix eigvect. */
             //real part
             for (i = 0; i < n; i++)
                 for (j = 0; j < n; j++)
                     part[i * n + j] = eigvectinv[i * n +j].r;
             
-            /* 1 - compute the one norm of the complex matrix eigvect */
+            /* 1 - compute the one norm of the real part of matrix eigvect */
             onenorm = F77_CALL(dlange)("1", &n, &n, part, &n, (double*) NULL);
 
             /* 2 - estimates the reciprocal of the condition number of the one norm of eigvect */
             F77_CALL(dgecon)("1", &n, part, &n, &onenorm, &rcond, worksing, rworksing, &info);
 
             if (rcond < tol) is_diag=0; 
-            /*
-            //imaginary part
-            for (i = 0; i < n; i++)
-                for (j = 0; j < n; j++)
-                    part[i * n + j] = eigvectinv[i * n +j].i;
-            
-            onenorm = F77_CALL(dlange)("1", &n, &n, part, &n, (double*) NULL);
-            
-            F77_CALL(dgecon)("1", &n, part, &n, &onenorm, &rcond, worksing, rworksing, &info);
-            
-            if (rcond < tol) is_diag=0; */
         }
         
-        Rprintf("is diag final %d\n", is_diag);
 
         if (is_diag)
         {
@@ -183,47 +173,20 @@ void expm_eigen(double *x, int n, double *z, double tol)
                 }
             }
 
-            /*Rprintf("expeigval\n");
-            for (i = 0; i < n; i++)
-                for (j = 0; j < n; j++)
-                    Rprintf("%.10f +i*%.10f\n", expeigval[i * n + j].r, expeigval[i * n + j].i);*/
-
             /* 2 - restore the matrix eigvect */
             Memcpy(eigvect, ctmp, nsqr);
-
-            /*
-            Rprintf("\nAPRES\n\n");
-
-            Rprintf("eigvect\n");
-            for (i = 0; i < n; i++)
-                for (j = 0; j < n; j++)
-                    Rprintf("%.10f +i*%.10f\n", eigvect[i * n + j].r, eigvect[i * n + j].i);
-            Rprintf("eigvectinv\n");
-            for (i = 0; i < n; i++)
-                for (j = 0; j < n; j++)
-                    Rprintf("%.10f +i*%.10f\n", eigvectinv[i * n + j].r, eigvectinv[i * n + j].i);*/
 
             /* 3 - compute (complex) matrix product: ctmp <- eigvect * expeigval */
             F77_CALL(zgemm)(transa, transa, &n, &n, &n, &cone, eigvect, &n,
 			    expeigval, &n, &czero, ctmp, &n);
-            /*
-            Rprintf("eigvect * expeigval\n");
-            for (i = 0; i < n; i++)
-                for (j = 0; j < n; j++)
-                    Rprintf("%.10f +i*%.10f\n", ctmp[i * n + j].r, ctmp[i * n + j].i);*/
 
             /* 4 - compute (complex) matrix product: expeigval <- ctmp * eigvectinv */
             F77_CALL(zgemm)(transa, transa, &n, &n, &n, &cone, ctmp, &n,
 			    eigvectinv, &n, &czero, expeigval, &n);
-            /*
-            Rprintf(" ctmp * eigvectinv\n");
-            for (i = 0; i < n; i++)
-                for (j = 0; j < n; j++)
-                    Rprintf("%.10f +i*%.10f\n", expeigval[i * n + j].r, expeigval[i * n + j].i);*/
-
 
             /* store the real part in z */
-            /* the matrix exponential is real, even if x has complex eigen values. */
+            /* the matrix exponential is always real, 
+             * even if x has complex eigen values. */
             for (i = 0; i < n; i++)
                 for (j = 0; j < n; j++)
                     z[i * n + j] = expeigval[i * n + j].r;
