@@ -17,7 +17,8 @@ expm(x, method = c("Ward77", "Pade", "Taylor", "PadeO", "TaylorO",
 }
 \arguments{
   \item{x}{a square matrix.}
-  \item{method}{"Ward77", "Pade" or "Taylor", etc; the versions with "*O" call the
+  \item{method}{\code{"Ward77"}, \code{"Pade"} or \code{"Taylor"}, etc; 
+  the versions with "*O" call the
       original Fortran code, whereas the first ones call the BLAS-using
       and partly simplified newer code.\cr
     \code{"R_Pade"} uses an \R-code version of \code{"Pade"} for
@@ -25,7 +26,11 @@ expm(x, method = c("Ward77", "Pade", "Taylor", "PadeO", "TaylorO",
     \code{"R_Ward77"} uses an \R version of \code{"Ward77"}, still based
     on LAPACK's \code{dgebal}, see \R interface \code{\link{dgebal}}.
     This has enabled us to diagnose and fix the bug in the original
-    octave implementation of \code{"Ward77"}.
+    octave implementation of \code{"Ward77"}. 
+    \code{"R_Eigen"} tries to diagonalise the matrix \code{x}, if not possible, 
+    \code{"R_Eigen"} raises an error. \code{"hybrid_Eigen_Ward"} method also
+    tries to diagonalise the matrix \code{x}, if not possible, it uses 
+    \code{"Ward77"} algorithm.
     }
   \item{order}{an integer, the order of approximation to be used, for
     the "Pade" and "Taylor" methods.  The best value for this depends on
@@ -74,6 +79,9 @@ expm(x, method = c("Ward77", "Pade", "Taylor", "PadeO", "TaylorO",
   The \code{"Pade"} and  \code{"Taylor"} methods are slight
   modifications of the "*O" ([O]riginal versions) methods,
   by Martin Maechler, using BLAS and LINPACK where possible.
+
+  The \code{"hybrid_Eigen_Ward"} method by Christophe Dutang is a C
+  translation of \code{"R_Eigen"} method by Martin Maechler.
 }
 \references{
   Ward, R. C. (1977).  Numerical computation
@@ -187,6 +195,17 @@ max(abs(expm(test4, method="Pade") - expm(test4, method="R_Eigen")))
 ## settings order=8, method="Pade" -- accuracy could
 ## presumably be improved still further by some tuning
 ## of these settings.
+
+##
+## example of computationally singular matrix
+##
+m <- matrix(c(0,1,0,0), 2,2)
+try(
+expm(m, m="R_Eigen") 
+)
+## error since m is computationally singular
+expm(m, m="hybrid")
+## hybrid use the Ward77 method
 }
 \keyword{algebra}
 \keyword{math}

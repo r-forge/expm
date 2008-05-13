@@ -1,3 +1,9 @@
+2008-05-13 Christophe Dutang <christophe.dutang@ensimag.fr>
+	* Use Lapack function zgecon in "hybrid_Eigen_Ward" to test the 
+	singularity.
+	* Start the matrix logarithm logm.
+
+
 2008-03-20  Vincent Goulet  <vincent.goulet@act.ulaval.ca>
 
 	* New function matpow() as alias to operator %^%.

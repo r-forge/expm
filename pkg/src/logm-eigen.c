@@ -1,10 +1,14 @@
 /*  ===== File part of R package expm =====
  *
- *  Function to compute the matrix exponential
+ *  Function to compute the matrix logarithm
  *
- *     exp(M) = sum(n = 0:Inf; M^n / n!),
+ *     log(M) = L such that 
+ * 
+ *     M  = exp(L) where
  *
- *  where M is an (n x n) matrix.
+ *     exp(L) = sum(n = 0:Inf; L^n / n!),
+ *
+ *  where M and L are an (n x n) matrix.
  *
  *  The functions therein use LAPACK and BLAS routines. Nicely
  *  formatted man pages for these can be found at
@@ -17,13 +21,13 @@
  *  <Rsource>/src/modules/lapack/lapack.c, used in eigen()
  */
 
-#include "expm-eigen.h"
+#include "logm-eigen.h"
 
 
-void expm_eigen(double *x, int n, double *z, double tol)
+void logm_eigen(double *x, int n, double *z, double tol)
 {
     if (n == 1)
-        z[0] = exp(x[0]);		/* scalar exponential */
+        z[0] = log(x[0]);		/* scalar logarithm */
     else
     {
         const char *transa = "N";
@@ -44,7 +48,7 @@ void expm_eigen(double *x, int n, double *z, double tol)
         double *rworksing = (double *) R_alloc(2*n, sizeof(double)); /* working vector to test the singularity */
         Rcomplex *eigvect = (Rcomplex *) R_alloc(nsqr, sizeof(Rcomplex)); /* (right) eigenvectors matrix */
         Rcomplex *eigvectinv = (Rcomplex *) R_alloc(nsqr, sizeof(Rcomplex)); /* its inverse */
-        Rcomplex *expeigval; /* complex matrix diag(exp(eigenvalues)) */
+        Rcomplex *logeigval; /* complex matrix diag(log(eigenvalues)) */
         Rcomplex *ctmp = (Rcomplex *) R_alloc(nsqr, sizeof(Rcomplex)); /* temp working variable */
         Rcomplex *worksing = (Rcomplex *) R_alloc(2*n, sizeof(Rcomplex)); /* workspace to test the singularity */
 
@@ -146,24 +150,24 @@ void expm_eigen(double *x, int n, double *z, double tol)
             
             /* x is diagonalisable so
              * compute complex matrix operations :
-             * eigvect %*% diag(exp(eigenvalues)) %*% eigvectinv */
+             * eigvect %*% diag(log(eigenvalues)) %*% eigvectinv */
 
-            /* 1 - expeigval is the complex matrix diag(exp(eigenvalues)) */
-            /* code based on z_exp in complex.c */
-            expeigval = (Rcomplex *) R_alloc(nsqr, sizeof(Rcomplex));
+            /* 1 - logeigval is the complex matrix diag(log(eigenvalues)) */
+            /* code based on z_log in complex.c */
+            logeigval = (Rcomplex *) R_alloc(nsqr, sizeof(Rcomplex));
             for (i = 0; i < n; i++)
             {
                 for (j = 0; j < n; j++)
                 {
                     if(i == j)
                     {
-                        expeigval[i * n +j].r = exp(wR[i]) * cos(wI[i]);
-                        expeigval[i * n +j].i = exp(wR[i]) * sin(wI[i]);
+                        logeigval[i * n +j].r = log( sqrt(wR[i] * wR[i] + wI[i] * wI[i]) ) ;
+                        logeigval[i * n +j].i = atan2( wI[i], wR[i] ) ;
                     }
                     else
                     {
-                        expeigval[i * n +j].r = 0.0;
-                        expeigval[i * n +j].i = 0.0;
+                        logeigval[i * n +j].r = 0.0;
+                        logeigval[i * n +j].i = 0.0;
                     }
                 }
             }
@@ -171,29 +175,35 @@ void expm_eigen(double *x, int n, double *z, double tol)
             /* 2 - restore the matrix eigvect */
             Memcpy(eigvect, ctmp, nsqr);
 
-            /* 3 - compute (complex) matrix product: ctmp <- eigvect * expeigval */
+            /* 3 - compute (complex) matrix product: ctmp <- eigvect * logeigval */
             F77_CALL(zgemm)(transa, transa, &n, &n, &n, &cone, eigvect, &n,
-			    expeigval, &n, &czero, ctmp, &n);
+			    logeigval, &n, &czero, ctmp, &n);
 
-            /* 4 - compute (complex) matrix product: expeigval <- ctmp * eigvectinv */
+            /* 4 - compute (complex) matrix product: logeigval <- ctmp * eigvectinv */
             F77_CALL(zgemm)(transa, transa, &n, &n, &n, &cone, ctmp, &n,
-			    eigvectinv, &n, &czero, expeigval, &n);
+			    eigvectinv, &n, &czero, logeigval, &n);
 
+            //TOCHECK 
             /* store the real part in z */
-            /* the matrix exponential is always real, 
+            /* the matrix logarithm is always real, 
              * even if x has complex eigen values. */
             for (i = 0; i < n; i++)
+            {   
                 for (j = 0; j < n; j++)
-                    z[i * n + j] = expeigval[i * n + j].r;
+            {   z[i * n + j] = logeigval[i * n + j].r;
+             //   Rprintf(" %f \t", logeigval[i * n + j].i);
+            }
+            }
+        
 
         }
 	else
-	    expm(x, n, z, Ward_2);
+        Rprintf("non diagonalisable matrix\n");
     }
 }
 
 /* Main function, the only one used by .Call(). */
-SEXP do_expm_eigen(SEXP x, SEXP tolin)
+SEXP do_logm_eigen(SEXP x, SEXP tolin)
 {
     SEXP dims, z;
     int n, m;
@@ -214,7 +224,7 @@ SEXP do_expm_eigen(SEXP x, SEXP tolin)
     PROTECT(z = allocMatrix(REALSXP, n, n));
     rz = REAL(z);
 
-    expm_eigen(rx, n, rz, tol);
+    logm_eigen(rx, n, rz, tol);
 
     setAttrib(z, R_DimNamesSymbol, getAttrib(x, R_DimNamesSymbol));
 

@@ -1,8 +1,8 @@
 /*  ===== File part of R package expm =====
  *
- *  expm-eigen.h
+ *  logm-eigen.h
  *
- *  Created by Christophe Dutang on 27/02/08.
+ *  Created by Christophe Dutang on 13/05/08.
  *
  */
 
@@ -15,9 +15,9 @@
 
 
 #include "locale.h"
-#include "expm.h"
+//#include "logm.h"
 
-SEXP do_expm_eigen(SEXP x, SEXP tolin);
-void expm_eigen(double *x, int n, double *z, double tol);
+SEXP do_logm_eigen(SEXP x, SEXP tolin);
+void logm_eigen(double *x, int n, double *z, double tol);
 
 
