@@ -11,7 +11,7 @@
   %\VignettePackage{expm}
 
   \title{Using \pkg{expm} in packages}
-  \author{Christophe Dutang \\ ISFA, Université Claude Bernard Lyon 1 \\[3ex]
+  \author{Christophe Dutang \\ ENSIMAG, Grenoble INP \\[3ex]
     Vincent Goulet \\ École d'actuariat, Université Laval}
   \date{}
 
