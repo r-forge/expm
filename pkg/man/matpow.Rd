@@ -12,7 +12,7 @@ x \%^\% k
 }
 \arguments{
   \item{x}{a square \code{\link{matrix}}}.
-  \item{k}{an integer, \eqn{k \ge 0}{k >= 0}}.
+  \item{k}{an integer, \eqn{k \ge 0}{k >= 0}.}
 }
 \details{
   Argument \eqn{k} is coerced to integer using \code{\link{as.integer}}.
