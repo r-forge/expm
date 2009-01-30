@@ -27,8 +27,7 @@ void expm_eigen(double *x, int n, double *z, double tol)
     else
     {
         const char *transa = "N";
-        const char *one = "1";
-        const int nsqr = n * n, np1 = n + 1;
+        const int nsqr = n * n;
 
         const Rcomplex cone = {1., 0.}, czero = {0., 0.};
         int i, j;
@@ -123,27 +122,27 @@ void expm_eigen(double *x, int n, double *z, double tol)
             error(_("argument %d of Lapack routine dgesv had invalid value"), -info);
         if (info == 0)
             is_diag = 1;
-        
+
         /* check if matrix eigvectinv is numerically singular */
         if (is_diag)
-        { 
+        {
             /* compute the reciprocal condition number of eigvectinv. */
-            
+
             /* 1 - compute the one norm of the matrix eigvectinv */
             onenorm = F77_CALL(zlange)("1", &n, &n, eigvectinv, &n, (double*) NULL);
-            
-            /* 2 - estimates the reciprocal of the condition number 
+
+            /* 2 - estimates the reciprocal of the condition number
              * when the one norm is used. */
             F77_CALL(zgecon)("1", &n, eigvectinv, &n, &onenorm, &rcond, worksing, rworksing, &info);
 
-            if (rcond < tol) 
-                is_diag=0; 
+            if (rcond < tol)
+                is_diag=0;
         }
 
 
         if (is_diag)
         {
-            
+
             /* x is diagonalisable so
              * compute complex matrix operations :
              * eigvect %*% diag(exp(eigenvalues)) %*% eigvectinv */
@@ -180,7 +179,7 @@ void expm_eigen(double *x, int n, double *z, double tol)
 			    eigvectinv, &n, &czero, expeigval, &n);
 
             /* store the real part in z */
-            /* the matrix exponential is always real, 
+            /* the matrix exponential is always real,
              * even if x has complex eigen values. */
             for (i = 0; i < n; i++)
                 for (j = 0; j < n; j++)
@@ -196,12 +195,17 @@ void expm_eigen(double *x, int n, double *z, double tol)
 SEXP do_expm_eigen(SEXP x, SEXP tolin)
 {
     SEXP dims, z;
-    int n, m;
-    double *rx = REAL(x), *rz;
+    int n, m, nprot = 1;
+    double *rx, *rz;
     double tol = asReal(tolin);
 
     if (!isNumeric(x) || !isMatrix(x))
         error(_("invalid argument"));
+    if (isInteger(x)) {
+	nprot++;
+	x = PROTECT(coerceVector(x, REALSXP));
+    }
+    rx = REAL(x);
 
     dims = getAttrib(x, R_DimSymbol);
     n = INTEGER(dims)[0];
@@ -218,7 +222,6 @@ SEXP do_expm_eigen(SEXP x, SEXP tolin)
 
     setAttrib(z, R_DimNamesSymbol, getAttrib(x, R_DimNamesSymbol));
 
-    UNPROTECT(1);
-
+    UNPROTECT(nprot);
     return z;
 }

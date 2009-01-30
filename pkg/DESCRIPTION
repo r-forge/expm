@@ -1,8 +1,8 @@
 Package: expm
 Type: Package
 Title: Matrix exponential
-Version: 0.9-3
-Date: 2008-04-05
+Version: 0.9-4
+Date: 2009-01-30
 Author: Vincent Goulet, Christophe Dutang, David Firth, Marina Shapira, Martin Maechler
 Maintainer: Vincent Goulet <vincent.goulet@act.ulaval.ca>
 Description: Simple package for computation of the matrix exponential and

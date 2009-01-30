@@ -1,5 +1,12 @@
+2009-01-30  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* src/R_dgebal.c (R_dgebal): fix to work also for integer matrix()
+	* src/expm.c (do_expm),
+	* src/expm-eigen.c (do_expm_eigen): ditto
+	* tests/bal-ex.R:  and test for it.
+
 2008-05-13 Christophe Dutang <christophe.dutang@ensimag.fr>
-	* Use Lapack function zgecon in "hybrid_Eigen_Ward" to test the 
+	* Use Lapack function zgecon in "hybrid_Eigen_Ward" to test the
 	singularity.
 	* Start the matrix logarithm logm.
 

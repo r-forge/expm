@@ -3,6 +3,9 @@ source(system.file("test-tools.R", package= "expm"))## -> assertError()...
 
 demo(dgebalTst) #-> the function definition and the first few examples
 
+dm4. <- dgebal(m4)
+storage.mode(m4) <- "integer"
+stopifnot(identical(dm4., dgebal(m4)))
 
 expm(m)
 expm(m,"Pade") ## are different indeed {when bug still existed}

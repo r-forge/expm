@@ -22,11 +22,14 @@ SEXP R_dgebal(SEXP x, SEXP type)
 {
     SEXP dims, z, Scale, i_1, i_2, ans, nms;
     char typnm[] = {'\0', '\0'};
-    int n, info;
+    int n, info, nprot = 2;
 
     if (!isNumeric(x) || !isMatrix(x))
 	error(_("invalid argument: not a numeric matrix"));
-
+    if (isInteger(x)) {
+	nprot++;
+	x = PROTECT(coerceVector(x, REALSXP));
+    }
     dims = getAttrib(x, R_DimSymbol);
     n = INTEGER(dims)[0];
     if (n != INTEGER(dims)[1])
@@ -60,7 +63,7 @@ SEXP R_dgebal(SEXP x, SEXP type)
 
     setAttrib(ans, R_NamesSymbol, nms);
     /* now return  list(z, scale[], i1, i2) */
-    UNPROTECT(2);
+    UNPROTECT(nprot);
     return ans;
 }
 
