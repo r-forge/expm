@@ -6,3 +6,9 @@ export(expm)
 export("%^%")
 export(dgebal)
 export(logm)
+
+## From Michael Stadelmann's (ETH Zurich) Master Thesis : ------------
+
+export(expm2) ## FIXME name will probably change -> expm(method = ".")
+## For now we want the files to be kept modularly separate from the rest of 'expm'
+export(expmCond, expmFrechet)

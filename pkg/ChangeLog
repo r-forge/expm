@@ -1,3 +1,36 @@
+2009-02-19  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* DESCRIPTION (Version): 0.95-1
+	* R/expmCond-all.R: only public expmCond(*, method=.) function,
+		instead of expmCond1Est() etc.
+	* man/expmCond.Rd:   ditto
+	* tests/expm-Cond.R: ditto
+
+2009-02-19  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* DESCRIPTION (Maintainer): myself, for the moment; need to get
+	E-mail feedback from win-builder.
+
+	* tests/expm-Cond.R: new tests for expmCond*()
+
+	* tests/exact-ex.R: factor the utilities out into new file; add expm2()
+	* demo/exact-fn.R:  containing only (function + data) definitions
+
+2009-02-18  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* R/expmCond-all.R (expmFrechet): method "blockEnlarge", also for testing
+	* man/expmFrechet.Rd:             the default method
+
+2009-02-17  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* DESCRIPTION (Version): 0.95-0
+
+	* R/expm2.R (expm2): new algorithms from Michael Stadelmann's
+	Master thesis work
+	* R/expmCond-all.R (expmCond, ..): Exponential Condition Number estimation
+	* man/expm2.Rd, man/expmCond.Rd, man/expmFrechet.Rd: docu
+	* NAMESPACE: export new functions
+
 2009-01-30  Martin Maechler  <maechler@stat.math.ethz.ch>
 
 	* src/R_dgebal.c (R_dgebal): fix to work also for integer matrix()

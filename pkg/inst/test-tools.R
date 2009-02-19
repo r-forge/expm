@@ -41,6 +41,7 @@ expm.t.identity <- function(x, method,
     all.equal(t(ex), et, tol = tol, check.attributes = check.attributes)
 }
 
+
 ### This is similar to Matrix'  example(spMatrix) :
 ##
 rSpMatrix <- function(nrow, ncol = nrow, nnz,

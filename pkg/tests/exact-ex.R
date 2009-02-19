@@ -2,29 +2,8 @@
 
 library(expm)
 
-source(system.file("test-tools.R", package= "expm"))## -> assertError()...
-## rMat(), ..
-
-### For nilpotent matrices A, exp(A) is polynomial in A
-###  Mathworld gives the example of  the general  3 x 3  upper triangle
-nilA3 <- function(x,y,z) {
-    ## Purpose: simple nilpotent matrix 3x3  A (with A^n = 0 for n >= 3)
-    ##          and its exact matrix exponential
-    ## ----------------------------------------------------------------------
-    ## Author: Martin Maechler, Date: 19 Jan 2008
-    stopifnot((n <- length(x)) == 1, length(y) == 1, length(z) == 1,
-              is.numeric(x), is.numeric(y), is.numeric(z))
-    list(A = cbind(0, rbind(matrix(c(x,0,z,y), 2,2), 0)),
-         expA = cbind(c(1,0,0), c(x,1,0), c(z + x*y/2, y, 1)))
-}
-
-re.nilA3 <- function(xyz, EXPM)
-{
-### TODO:  allow several kinds of EXPM() simultaneously (for same 'r')
-    EXPM <- match.fun(EXPM)
-    r <- do.call(nilA3, as.list(xyz))
-    relErr(r$expA, EXPM(r$A))
-}
+source(system.file("test-tools.R", package = "expm"))## -> assertError(), rMat()
+source(system.file("demo", "exact-fn.R", package = "expm"))
 
 set.seed(321)
 re <- replicate(1000,
@@ -72,35 +51,6 @@ if(!require("Matrix"))
 system.time(R40 <- rMat(40))
 system.time(R80 <- rMat(80))
 
-facMat <- function(n, R_FUN, ev = R_FUN(n), M = rMat(n, R_FUN = R_FUN))
-{
-    ## Purpose: Construct random matrix x of which we "know" expm(x)
-    ## because we set  x :=  M %*% diag(ev)  %*% solve(M)
-    ## ----------------------------------------------------------------------
-    ## Arguments: n:     dimension of matrices
-    ##            R_FUN: random number generator function (n)
-    ##            ev:    numeric length-n vector of eigenvalues
-    ##            M:     n x n matrix. Note that the default,
-    ##                   rMat() will give matrices ``not close to singular''
-    ## ----------------------------------------------------------------------
-    ## Author: Martin Maechler, Date: Feb 2008
-    R_FUN <- match.fun(R_FUN)
-    stopifnot(n > 0, is.numeric(ev), length(ev) == n,
-              dim(M) == c(n,n), is.numeric(M))
-
-    iM <- solve(M)
-    ## D <- diag(ev); A = M %*% D %*% iM
-    list(A    = M %*% (ev      * iM),
-         expA = M %*% (exp(ev) * iM))
-}
-
-re.facMat <- function(n, EXPMlist, rFUN = rnorm, ...)
-{
-    stopifnot(is.list(EXPMlist))
-    r <- facMat(n, rFUN, ...)
-    sapply(EXPMlist, function(EXPM) relErr(r$expA, EXPM(r$A)))
-}
-
 expm.safe.Eigen <- function(x, silent = FALSE) {
     r <- try(expm::expm(x, "R_Eigen"), silent = silent)
     if(inherits(r, "try-error")) NA else r
@@ -108,13 +58,15 @@ expm.safe.Eigen <- function(x, silent = FALSE) {
 
 expmList <-
     list(Ward  = function(x) expm::expm(x, "Ward77"),
-         s.P.s = function(x) expm::expm(x, "Pade"),
-         s.P.sO= function(x) expm::expm(x, "PadeO"),
-         s.T.s = function(x) expm::expm(x, "Taylor"),
-         s.T.sO= function(x) expm::expm(x, "TaylorO"),
-         Eigen = expm.safe.Eigen,
-         hybrid= function(x) expm::expm(x, "hybrid")
-         )
+	 s.P.s = function(x) expm::expm(x, "Pade"),
+	 s.P.sO= function(x) expm::expm(x, "PadeO"),
+	 sPs.H08.= function(x) expm::expm2(x, balancing=FALSE),
+	 sPs.H08b= function(x) expm::expm2(x, balancing= TRUE),
+	 s.T.s = function(x) expm::expm(x, "Taylor"),
+	 s.T.sO= function(x) expm::expm(x, "TaylorO"),
+	 Eigen = expm.safe.Eigen,
+	 hybrid= function(x) expm::expm(x, "hybrid")
+	 )
 expmL.wo.E <- expmList[names(expmList) != "R_Eigen"]
 
 
@@ -131,42 +83,32 @@ boxplot(t(fRE), log="y", notch=TRUE,
 ## ... (not yet)
 
 
-### --- The 2x2 example with bad condition , see A3 in ./ex2.R
-m2ex3 <- function(eps = 0) {
-    stopifnot(is.numeric(eps), length(eps) == 1)
-    A <- rbind(c(-1,     1),
-               c(eps^2, -1))
-    I.e <- 1 - eps^2 / 2
-    V <- I.e* rbind(    c(-1, 1),
-                    eps*c( 1, 1))
-    D <- c(-1-eps, -1+eps)
-    iV <- ## solve(V)
-        rbind(c(-1, 1/eps),
-              c( 1, 1/eps)) / (2 * I.e)
-    ## NOTE:  kappa(V) = condition_number(V) == 1/eps exactly
-    useTol <- 2e-16 / eps
-    stopifnot(all.equal(diag(2), V %*% iV,       tol=useTol),
-              all.equal(A, V %*% diag(D) %*% iV, tol=useTol) )
-    ch.e <- cosh(eps)
-    sh.e <- sinh(eps)
-    list(A = A,
-         expA = exp(-1) *
-         rbind(c( ch.e,  sh.e/eps),
-               c(sh.e*eps, ch.e  )))
-}
-re.m2ex3 <- function(eps, EXPMlist)
-{
-    stopifnot(is.list(EXPMlist))
-    r <- m2ex3(eps)
-    sapply(EXPMlist, function(EXPM) relErr(r$expA, EXPM(r$A)))
-}
+### m2ex3() --- The 2x2 example with bad condition , see A3 in ./ex2.R
 
-re.m2ex3(1e-8, expmList)# Ward is best; s.P.s fair; Eigen (and hybrid): ~1e-9
+RE <- re.m2ex3(1e-8, expmList)
+sort(RE)# Ward + both sps.H08 are best; s.P.s fair, Eigen (and hybrid): ~1e-9
 
 eps <- 10^-(1:18)
 t.m2 <- t(sapply(eps, re.m2ex3, EXPMlist = expmList))
-## --> 5 error messages from try(... "R_Eigen" ...)
-t.m2[, c(1:2,4,6:7)] ## very impressive !!  Ward is best!
+## --> 3 error messages from solve(V), 5 error messages from try(. "R_Eigen" ...)
+cbind(sort(apply(log(t.m2),2, median, na.rm=TRUE)))
+## 'na.rm=TRUE' needed for Eigen which blows up for the last 3 eps
+t.m2.ranks <- sort(rowMeans(apply(t.m2, 1, rank)))
+cbind(signif(t.m2.ranks, 3))
+## sPs.H08. 2.08
+## sPs.H08b 2.08
+## Ward     2.25
+## s.T.s    5.44
+## s.T.sO   5.44
+## s.P.s    6.06
+## s.P.sO   6.06
+## hybrid   7.25
+## Eigen    8.33
+
+print(t.m2[, names(t.m2.ranks)[1:8]], digits = 3)
+## ==> 1st class: H08 (both) and (but slightly better than)  Ward
+##     2nd class  s.T.s and s.P.s
+##    "bad" : hybrid and Eigen
 
 ## library(RColorBrewer)
 ## Bcol <- brewer.pal(7,"Dark2")
@@ -208,17 +150,7 @@ round(nDig, 2)
 ##  16.26  14.65  14.65  14.65  14.65   6.20   6.39  [AMD Opteron 64-bit]
 ##    Inf  14.65  14.65  14.65  14.65   6.74   6.33  [Pentium-M (32-bit)]
 
-###---
-rnilMat <- function(n, R_FUN = function(n) rpois(n, lambda=5))
-{
-    ## random upper triangular (zero-diagonal) nilpotent  n x n matrix
-    m <- matrix(0, n,n)
-    ut <- upper.tri(m)
-    R_FUN <- match.fun(R_FUN)
-    m[ut] <- R_FUN(sum(ut))
-    m
-}
-
+###--- rnilMat() : random upper triangular (zero-diagonal) nilpotent  n x n matrix
 
 set.seed(17)
 m <- rnilMat(10)
@@ -247,7 +179,8 @@ Em.xct <- EmN / dN
 
 stopifnot(all.equal(E.m, Em.xct,
                     check.attributes = FALSE, tol= 1e-13))
-sapply(expmL.wo.E, function(EXPM) relErr(Em.xct, EXPM(m)))
+re.x <- sapply(expmL.wo.E, function(EXPM) relErr(Em.xct, EXPM(m)))
+re.x
 ## result depends quite a bit on platform:
 
 ## Pentium-M 32-bit ubuntu gave
@@ -257,9 +190,10 @@ sapply(expmL.wo.E, function(EXPM) relErr(Em.xct, EXPM(m)))
 ## "Ward77" expm() is again more accurate than  s+Pade+s,
 ## *but* s+Taylor+s is even more accurate
 
-## but on 64-bit AMD Opterons
-##         Ward        s.P.s       s.P.sO        s.T.s       s.T.sO       hybrid
-## 4.424070e-17 3.989036e-17 3.989036e-17 8.435227e-17 8.435227e-17 4.424070e-17
+## but on 64-bit AMD Opterons [ option( digits = 3) ] :
+##     Ward    s.P.s   s.P.sO sPs.H08. sPs.H08b    s.T.s   s.T.sO  Eigen   hybrid
+## 4.42e-17 3.99e-17 3.99e-17 1.10e-16 1.10e-16 8.44e-17 8.44e-17     NA 4.42e-17
 
+stopifnot(re.x[c("Ward", "sPs.H08.", "sPs.H08b")] < 3e-16)
 
 cat('Time elapsed: ',(p3 <- proc.time())-p2,'\n') # for ``statistical reasons''
