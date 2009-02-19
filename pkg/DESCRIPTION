@@ -5,8 +5,7 @@ Version: 0.95-1
 Date: 2009-02-19
 Author: Vincent Goulet, Christophe Dutang, Martin Maechler,
 	David Firth, Marina Shapira, Michael Stadelmann
-Maintainer: Martin Maechler <maechler@R-project.org>
-oMaintainer: Vincent Goulet <vincent.goulet@act.ulaval.ca>
+Maintainer: Expm Developers <expm-developers@lists.R-forge.R-project.org>
 Description: Simple package for computation of the matrix exponential and
  related quantities.
 Depends: R (>= 2.7.0)
