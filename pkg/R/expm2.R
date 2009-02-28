@@ -17,7 +17,7 @@
 
 
 ##-------CODE-------------------------------------------------------------------
-expm2 <- function(A, balancing=TRUE)
+expm.Higham08 <- function(A, balancing=TRUE)
 {
     ## Check if A is square
     d <- dim(A)

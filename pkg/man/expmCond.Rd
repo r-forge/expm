@@ -37,7 +37,7 @@ expmCond(A, method = c("1.est", "F.est", "exact"),
 \value{
   when \code{expm = TRUE}, for \code{method = "exact"}, a
   \code{\link{list}} with components
-  \item{expm}{containing the matrix exponential, \code{\link{expm2}(A)}.}
+  \item{expm}{containing the matrix exponential, \code{\link{expm.Higham08}(A)}.}
   \item{expmCond(F|1)}{numeric scalar, (an approximation to) the (matrix
     exponential) condition number, for either the 1-norm
     (\code{expmCond1}) or the Frobenius-norm (\code{expmCondF}).
@@ -62,13 +62,13 @@ expmCond(A, method = c("1.est", "F.est", "exact"),
   Michael Stadelmann (final polish by Martin Maechler).
 }
 \seealso{
- \code{\link{expm2}} for the matrix exponential.
+ \code{\link{expm.Higham08}} for the matrix exponential.
 }
 \examples{
 set.seed(101)
 (A <- matrix(round(rnorm(3^2),1), 3,3))
 
-eA <- expm2(A)
+eA <- expm.Higham08(A)
 stopifnot(all.equal(eA, expm::expm(A), tol= 1e-15))
 
 C1 <- expmCond(A, "exact")

@@ -10,26 +10,32 @@
   approximation are very importantly combined with scaling and squaring.
 }
 \usage{
-expm(x, method = c("Ward77", "Pade", "Taylor", "PadeO", "TaylorO",
+expm(x, method = c("Higham08.b", "Higham08",
+                   "Ward77", "Pade", "Taylor", "PadeO", "TaylorO",
                    "R_Eigen", "R_Pade", "R_Ward77", "hybrid_Eigen_Ward"),
      order = 8, trySym = TRUE, tol = .Machine$double.eps,
      preconditioning = c("2bal", "1bal", "buggy"))
 }
 \arguments{
   \item{x}{a square matrix.}
-  \item{method}{\code{"Ward77"}, \code{"Pade"} or \code{"Taylor"}, etc; 
-  the versions with "*O" call the
-      original Fortran code, whereas the first ones call the BLAS-using
-      and partly simplified newer code.\cr
+  \item{method}{\code{"Higham08.b"}, \code{"Ward77"}, \code{"Pade"} or
+    \code{"Taylor"}, etc;
+    The default is now \code{"Higham08.b"} which uses Higham's 2008
+    algorithm with \emph{additional} balancing preconditioning,
+    see \code{\link{expm.Higham08}}.
+
+    The versions with "*O" call the
+    original Fortran code, whereas the first ones call the BLAS-using
+    and partly simplified newer code.\cr
     \code{"R_Pade"} uses an \R-code version of \code{"Pade"} for
     didactical reasons, and\cr
     \code{"R_Ward77"} uses an \R version of \code{"Ward77"}, still based
     on LAPACK's \code{dgebal}, see \R interface \code{\link{dgebal}}.
     This has enabled us to diagnose and fix the bug in the original
-    octave implementation of \code{"Ward77"}. 
-    \code{"R_Eigen"} tries to diagonalise the matrix \code{x}, if not possible, 
+    octave implementation of \code{"Ward77"}.
+    \code{"R_Eigen"} tries to diagonalise the matrix \code{x}, if not possible,
     \code{"R_Eigen"} raises an error. \code{"hybrid_Eigen_Ward"} method also
-    tries to diagonalise the matrix \code{x}, if not possible, it uses 
+    tries to diagonalise the matrix \code{x}, if not possible, it uses
     \code{"Ward77"} algorithm.
     }
   \item{order}{an integer, the order of approximation to be used, for
@@ -201,7 +207,7 @@ max(abs(expm(test4, method="Pade") - expm(test4, method="R_Eigen")))
 ##
 m <- matrix(c(0,1,0,0), 2,2)
 try(
-expm(m, m="R_Eigen") 
+expm(m, m="R_Eigen")
 )
 ## error since m is computationally singular
 expm(m, m="hybrid")

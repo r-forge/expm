@@ -9,6 +9,9 @@ export(logm)
 
 ## From Michael Stadelmann's (ETH Zurich) Master Thesis : ------------
 
-export(expm2) ## FIXME name will probably change -> expm(method = ".")
+export(expm.Higham08) ## exported for now; later -> expm(method = ".")
 ## For now we want the files to be kept modularly separate from the rest of 'expm'
 export(expmCond, expmFrechet)
+
+export(logm.Higham08) ## for now: merge into logm() with 'method = "."'
+export(sqrtm)

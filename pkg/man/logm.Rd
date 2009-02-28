@@ -1,48 +1,69 @@
 \name{logm}
 \alias{logm}
+\alias{logm.Higham08}
 \title{Matrix Logarithm}
 \description{
-  This function computes the exponential of a square matrix
-  \eqn{A} is \eqn{L} such that \eqn{A=exp(L)} where the matrix exponential is 
-  defined as the sum from \eqn{r=0} to infinity of
-  \eqn{L^r/r!}.
+  This function computes the matrix logarithm of a square matrix.
+  The logarithm of a matrix \eqn{A} is \eqn{L} such that \eqn{A= e^L}
+  (meaning \code{A == expm(L)}), see the documentation for the matrix
+  exponential, \code{\link{expm}}, which can be defined
+  as \deqn{e^L := \sum_{r=0}^\infty L^r/r! .}{sum[r = 0,..,Inf; L^r/r!] .}
 }
 \usage{
-logm(x, method = c("Eigen"),
-		 order = 8,
-                 trySym = TRUE, tol = .Machine$double.eps)
+logm(x, method = c("Higham08", "Eigen"),
+%      order = 8, trySym = TRUE,
+     tol = .Machine$double.eps)
 
+%% FIXME? drop this eventually:
+logm.Higham08(x)
 }
 \arguments{
   \item{x}{a square matrix.}
-  \item{method}{
-    \code{"Eigen"} tries to diagonalise the matrix \code{x}, if not possible, 
-    \code{"Eigen"} raises an error. 
-    }
-  \item{order}{TODO
+  \item{method}{a string specifying the algorithmic method to be used.
+    The default uses the algorithm by Higham(2008).
+
+    The simple \code{"Eigen"} method tries to diagonalise the matrix
+    \code{x}; if that is not possible, it raises an error.
   }
-  \item{trySym}{TODO}
+%   \item{order}{only for \code{method = "Eigen"} .. FIXME}
+%   \item{trySym}{only for \code{method = "Eigen"} .. FIXME}
   \item{tol}{a given tolerance used to check if \code{x} is
     computationally singular when \code{method = "Eigen"}.}
+}
+\references{
+  Higham, N.~J. (2008).
+  \emph{Functions of Matrices: Theory and Computation};
+  Society for Industrial and Applied Mathematics, Philadelphia, PA, USA.
+
+  The Matrix Logarithm is very nicely defined by Wikipedia,
+  \url{http://en.wikipedia.org/wiki/Matrix_logarithm}.
 }
 \details{
   The exponential of a matrix is defined as the infinite Taylor series
   \deqn{e^M = \sum_{k = 1}^\infty \frac{M^k}{k!}.}{%
-    exp(M) = I + M + M^2/2! + M^3/3! + \dots}. The logarithm matrix of \eqn{A} is 
+    exp(M) = I + M + M^2/2! + M^3/3! + \dots}. The logarithm matrix of \eqn{A} is
     the matrix \eqn{M} such that \eqn{exp(M) = A}.
 
-}
-\value{
-  The matrix logarithm of \code{x}.
-}
-\seealso{
-  The package vignette for details on the algorithms and calling the
+  Method \code{"Higham08"} works via \dQuote{\emph{inverse} scaling and
+    squaring}, and from the Schur decomposition, applying a matrix
+  square root computation.  It is somewhat slow but also works for
+  non-diagonalizable matrices.
+
+  See the package vignette for details on the algorithms and calling the
   function from external packages.
 }
-\author{
-  The \code{"Eigen"} method by Christophe Dutang.
+\value{
+  A matrix \sQuote{as \code{x}} with the matrix logarithm of \code{x},
+  i.e., \code{all.equal( expm(logm(x)), x, tol)} is typically true for
+  quite small tolerance \code{tol}.
 }
-\references{
+\seealso{
+  \code{\link{expm}}
+}
+\author{
+  Method \code{"Higham08"} was implemented by Michael Stadelmann as part of his
+  master thesis in mathematics, at ETH Zurich;
+  the \code{"Eigen"} method by Christophe Dutang.
 }
 \examples{
 m <- diag(2)

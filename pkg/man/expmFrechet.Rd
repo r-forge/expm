@@ -48,7 +48,7 @@ expmFrechet(A, E, method = c("SPS", "blockEnlarge"), expm = TRUE)
 \references{see \code{\link{expmCond}}.}
 \author{Michael Stadelmann (final polish by Martin Maechler).}
 \seealso{
- \code{\link{expm2}} for the matrix exponential.
+ \code{\link{expm.Higham08}} for the matrix exponential.
  \code{\link{expmCond}} for exponential condition number computations
   which are based on \code{expmFrechet}.
 }

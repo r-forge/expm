@@ -2,8 +2,8 @@
  *
  *  Function to compute the matrix logarithm
  *
- *     log(M) = L such that 
- * 
+ *     log(M) = L such that
+ *
  *     M  = exp(L) where
  *
  *     exp(L) = sum(n = 0:Inf; L^n / n!),
@@ -127,27 +127,27 @@ void logm_eigen(double *x, int n, double *z, double tol)
             error(_("argument %d of Lapack routine dgesv had invalid value"), -info);
         if (info == 0)
             is_diag = 1;
-        
+
         /* check if matrix eigvectinv is numerically singular */
         if (is_diag)
-        { 
+        {
             /* compute the reciprocal condition number of eigvectinv. */
-            
+
             /* 1 - compute the one norm of the matrix eigvectinv */
             onenorm = F77_CALL(zlange)("1", &n, &n, eigvectinv, &n, (double*) NULL);
-            
-            /* 2 - estimates the reciprocal of the condition number 
+
+            /* 2 - estimates the reciprocal of the condition number
              * when the one norm is used. */
             F77_CALL(zgecon)("1", &n, eigvectinv, &n, &onenorm, &rcond, worksing, rworksing, &info);
 
-            if (rcond < tol) 
-                is_diag=0; 
+            if (rcond < tol)
+                is_diag=0;
         }
 
 
         if (is_diag)
         {
-            
+
             /* x is diagonalisable so
              * compute complex matrix operations :
              * eigvect %*% diag(log(eigenvalues)) %*% eigvectinv */
@@ -183,22 +183,22 @@ void logm_eigen(double *x, int n, double *z, double tol)
             F77_CALL(zgemm)(transa, transa, &n, &n, &n, &cone, ctmp, &n,
 			    eigvectinv, &n, &czero, logeigval, &n);
 
-            //TOCHECK 
+            //TOCHECK
             /* store the real part in z */
-            /* the matrix logarithm is always real, 
+            /* the matrix logarithm is always real,
              * even if x has complex eigen values. */
             for (i = 0; i < n; i++)
-            {   
+            {
                 for (j = 0; j < n; j++)
             {   z[i * n + j] = logeigval[i * n + j].r;
              //   Rprintf(" %f \t", logeigval[i * n + j].i);
             }
             }
-        
+
 
         }
 	else
-        Rprintf("non diagonalisable matrix\n");
+	    error("non diagonalisable matrix");
     }
 }
 

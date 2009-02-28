@@ -7,7 +7,7 @@
 
 
 ##>> FIXME:  1)  *one*  expCond(A, method = "...", ...)
-##>>         2)  allow     'expm = FALSE' to *not* return the expm2() matrix
+##>>         2)  allow     'expm = FALSE' to *not* return the expm.Higham08() matrix
 
 expmCond <- function(A, method = c("1.est", "F.est", "exact"),
                      expm = TRUE, abstol = 0.1, reltol = 1e-6,
@@ -271,7 +271,7 @@ expmFrechet <- function(A,E, method = c("SPS","blockEnlarge"), expm = TRUE)
                OO <- array(0, dim=d)
                B <- rbind(cbind(A,  E),
                           cbind(OO, A)) ## stopifnot(dim(B) == 2*d)
-               fB <- expm2(B)[1:n, ]
+               fB <- expm.Higham08(B)[1:n, ]
                L <- fB[ , n+ 1:n]
                if(expm) list(expm = fB[ , 1:n], Lexpm = L) else list(Lexpm = L)
            })

@@ -1,3 +1,21 @@
+2009-02-28  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* DESCRIPTION (Version, Depends): 0.96-1, Matrix
+
+	* src/logm-eigen.c (logm_eigen): *do* signal an error, not just
+	print; as the help page has always said.
+
+	* man/logm.Rd: comment 'order' and 'trySym' out; introduce
+	method = "Higham08" and make it the default (!)
+	* R/logm.R: ditto
+
+	* R/logm.Higham08.R: new logm.Higham08() from Michael Stadelmann's thesis.
+	* R/sqrtm.R: new sqrtm(), ditto
+	* NAMESPACE: add here.
+	* tests/log+sqrt.R: tests for these; notably small non-diagonalizable cases
+
+	* R/expm2.R (expm.Higham08): renamed 'expm2' to expm.Higham08
+
 2009-02-19  Martin Maechler  <maechler@stat.math.ethz.ch>
 
 	* DESCRIPTION (Version): 0.95-1
