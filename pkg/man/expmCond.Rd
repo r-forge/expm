@@ -18,19 +18,21 @@ expmCond(A, method = c("1.est", "F.est", "exact"),
   \item{expm}{logical indicating if the matrix exponential itself, which
     is computed anyway, should be returned as well.}
   \item{abstol, reltol}{for \code{method = "F.est"}, numerical \eqn{\ge 0}{>= 0},
-    as \emph{absolute} error tolerance.}
-  \item{give.exact}{for \code{method = "exact"}, specify
-    as \emph{absolute} error tolerance.}
+    as \emph{absolute} and \emph{relative} error tolerance.}
+  \item{give.exact}{for \code{method = "exact"}, specify if only the
+    1-norm, the Frobenius norm, or both are to be computed.}
 }
 \details{
-  \code{method = "exact"} computes a Kronecker matrix of dimension
-  \eqn{n^2 \times n^2}{n^2 x n^2} and hence is prohibitely slow for
+  \code{method = "exact"}, aka Kronecker-Sylvester algorithm, computes a
+  Kronecker matrix of dimension \eqn{n^2 \times n^2}{n^2 x n^2} and
+  hence, with \eqn{O(n^5)} complexity, is prohibitely slow for
   non-small \eqn{n}.  It computes the \emph{exact} exponential-condition
   numbers for both the Frobenius and/or the 1-norm, depending on
   \code{give.exact}.
 
   The two other methods compute approximations, to these norms, i.e.,
-  \bold{est}imate them, using algorithms from Higham, chapt.~3.4.
+  \bold{est}imate them, using algorithms from Higham, chapt.~3.4, both
+  with complexity \eqn{O(n^3)}.
 
   %% FIXME:  Say more
 }
@@ -40,11 +42,10 @@ expmCond(A, method = c("1.est", "F.est", "exact"),
   \item{expm}{containing the matrix exponential, \code{\link{expm.Higham08}(A)}.}
   \item{expmCond(F|1)}{numeric scalar, (an approximation to) the (matrix
     exponential) condition number, for either the 1-norm
-    (\code{expmCond1}) or the Frobenius-norm (\code{expmCondF}).
-  }.
+    (\code{expmCond1}) or the Frobenius-norm (\code{expmCondF}).}
 
   When \code{expm} is false and \code{method} one of the approximations
-  (\code{"*.est"}), the condition number is returned (i.e.,
+  (\code{"*.est"}), the condition number is returned directly (i.e.,
   \code{\link{numeric}} of length one).
 }
 \references{

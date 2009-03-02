@@ -1,3 +1,13 @@
+2009-03-02  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* R/sqrtm.R (sqrtm): allow negative eigenvalues, with a
+	message iff "verbose"; use sqrt(<complex>) in that case.
+	* R/logm.Higham08.R (logm.Higham08): allow negative eigenvalues,
+	as in sqrtm.
+
+	* R/expmCond-all.R (.expmCond.1, .expmFrechet2008.26): and others;
+	cosmetic (speedy!) improvements; dating of Feb.23.
+
 2009-02-28  Martin Maechler  <maechler@stat.math.ethz.ch>
 
 	* DESCRIPTION (Version, Depends): 0.96-1, Matrix

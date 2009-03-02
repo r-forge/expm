@@ -1,6 +1,9 @@
 ### C code
 useDynLib(expm, .registration = TRUE)
 
+importFrom("Matrix", Schur, norm,# << only these two are really needed
+           Matrix)# <- only in  Schur(Matrix(.))
+
 ### Exports
 export(expm)
 export("%^%")

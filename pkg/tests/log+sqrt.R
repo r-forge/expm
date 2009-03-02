@@ -3,6 +3,15 @@ library(expm)
 
 source(system.file("test-tools.R", package = "expm"))## -> assertError(), rMat()
 
+tst.sqrtm <- function(m, tol = 1e-12, zap.Im.tol = 1e-10) {
+    r.m <- sqrtm(m)## should now work
+    s <- r.m %*% r.m
+    if(is.complex(s) && all(abs(Im(s)) < mean(abs(s)) * zap.Im.tol))
+        s <- Re(s)
+    all.equal(m, s, tol=tol)
+}
+
+
 options(verbose = TRUE) # -> get some messages from logm.Higham
 
 ### ---- Small exact : ----------
@@ -17,8 +26,8 @@ assertError(logm(L3, method="Eigen"))
 l.L2 <- logm.Higham08(L2)
 l.L3 <- logm.Higham08(L3)
 
-all.equal(l.L2, lL2, tol=0)# 5.64 e-14 (32 bit)
-all.equal(l.L3, lL3, tol=0)# 2.40 e-15 (32 bit)
+all.equal(l.L2, lL2, tol=0)# 5.64 e-14 (32-bit *and* 64-bit)
+all.equal(l.L3, lL3, tol=0)# 2.40 e-15   (ditto)
 stopifnot(all.equal(l.L2, lL2, tol= 1000e-16),
           all.equal(l.L3, lL3, tol=   80e-16))
 
@@ -47,20 +56,18 @@ for(n in c(2:5, 10:11, 30)) {
         EA <- expm.Higham08(A <- matrix(round(rnorm(n^2),2), n,n))
         stopifnot(all.equal(EA, expm.Higham08(logm.Higham08(EA)), tol=1e-12))
         cat(" ")
-        ## Testing  sqrtm()
+        ## Testing  sqrtm() --- for positive definite *and* arbitrary
+        stopifnot(tst.sqrtm(A))# A is completely random
         S <- crossprod(A) + rnorm(n^2) / 1000
-        rS <- try(sqrtm(S), silent=TRUE)
-        if(!inherits(rS, "try-error")) {
-            stopifnot(all.equal(S, rS %*% rS, tol=1e-12))
-            cat(".")
-        }
-        else ## FIXME check error message: "N" for negative EV
-            cat("N")
+        stopifnot(tst.sqrtm(S))
+        cat(".")
     }
     cat("\n")
 }
 
-### CPU-measurements
+cat('Time elapsed: ', (p1 <- proc.time()),'\n') # for ``statistical reasons''
+
+### CPU-measurements for  logm()
 options(verbose = FALSE)# printing costs ..
 set.seed(5)
 n <- 50
@@ -76,3 +83,5 @@ summary(cpuT)
 ## cmath-5 {Feb.2009}; Michi's original code:
 ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
 ##   1.794   2.249   2.389   2.388   2.515   2.831
+
+cat('Time elapsed: ',(p2 <- proc.time())-p1,'\n') # for ``statistical reasons''

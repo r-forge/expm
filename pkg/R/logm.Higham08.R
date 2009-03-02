@@ -60,17 +60,18 @@ logm.Higham08 <- function(x) {
     ##    and don't need to compute det() here, in the good cases !
     ##    if (det(x) == 0) stop("'x' is singular")
 
-    ##-------Step 0: Schur Decomposition--------------------------------------------
-    stopifnot(require("Matrix")) # just for this:
+    ##-------Step 0: Schur Decomposition-----------------------------------------
+
     Sch.x <- Schur(Matrix(x)) # checks for square matrix also
     ev <- Sch.x@EValues
-    if(!all(Arg(ev) != pi))
-        stop("'x' has negative real eigenvalues -- logm() may exist; not yet implemented")
+    if(getOption("verbose") && any(abs(Arg(ev) - pi) < 1e-7))
+## Let's see what works: temporarily *NOT* stop()ping :
+        message("logm.H..(): 'x' has negative real eigenvalues; probably ok")
     n <- Sch.x@Dim[1]
     Tr <- as.matrix(Sch.x@T)
     Q  <- as.matrix(Sch.x@Q)
 
-    ##----- Step 1: [Inverse] Scaling -----------------------------------------------
+    ##----- Step 1: [Inverse] Scaling -------------------------------------------
     I <- diag(n)
     thMax <- 0.264
     theta <- c(0.0162, 0.0539, 0.114, 0.187, thMax)
@@ -135,36 +136,39 @@ rootS <- function(UT) {
 
     ##------- STEP 0: Analyse block structure ----------------------------------
     ## Count 2x2 blocks (as Schur(x) is the real Schur Decompostion)
-    k <- 0
-    for (i in seq_len(n-1)) {
-        if (S[i+1,i] != 0) k <- k+1
-    }
+    J.has.2 <- S[cbind(2:n, 1:(n-1))] != 0
+    k <- sum(J.has.2) ## := number of non-zero SUB-diagonals
 
     ## Generate Blockstructure and save it as R.index
     R.index <- vector("list",n-k)
-    i <- 1
     l <- 1
-    while(i < n) {
-        if (S[i+1,i] == 0) {
-            R.index[[l]] <- i
-        }
-        else { R.index[[l]] <- (i:(i+1))
-               i <- i+1
-           }
-        i <- i+1
-        l <- l+1
+    i <- 1
+    while(i < n) { ## i advances by 1 or 2, depending on 1- or 2- Jordan Block
+	if (S[i+1,i] == 0) {
+	    R.index[[l]] <- i
+	}
+	else {
+	    R.index[[l]] <- (i:(i+1))
+	    i <- i+1
+	}
+	i <- i+1
+	l <- l+1
     }
-    if (is.null(R.index[[n-k]])) R.index[[n-k]] <- n
+    if (is.null(R.index[[n-k]])) { # needed; FIXME: should be able to "know"
+        ##message(sprintf("R.index[n-k = %d]] is NULL, set to n=%d", n-k,n))
+	R.index[[n-k]] <- n
+    }
 
-    ##---------STEP 1: Calculate diagonal elements/blocks---------------------------
+    ##---------STEP 1: Calculate diagonal elements/blocks------------------------
     ## Calculate the root of the diagonal blocks of the Schur Decompostion S
     I <- diag(2)
     X <- matrix(0,n,n)
     for (j in seq_len(n-k)) {
         ij <- R.index[[j]]
-        if (length(ij) == 1) {
-            X[ij,ij] <- sqrt(S[ij,ij])
-        }
+	if (length(ij) == 1) {
+	    ## FIXME(?) : in sqrtm(), we take *complex* sqrt() if needed :
+	    X[ij,ij] <- sqrt(S[ij,ij])
+	}
         else {
             ## "FIXME"(better algorithm): only need largest eigen value
             ev1 <- eigen(S[ij,ij], only.values=TRUE)$values[1]
@@ -177,7 +181,7 @@ rootS <- function(UT) {
 ### ___ FIXME __ code re-use: All the following is identical to 'STEP 3' in sqrtm()
 ###     -----    and almost all of STEP 1 above is == 'STEP 2' of sqrtm()
 
-    ##---------STEP 2: Calculate superdiagonal elements/blocks----------------------
+    ##---------STEP 2: Calculate superdiagonal elements/blocks-------------------
 
     ## Calculate the remaining, not-diagonal blocks
     if (n-k > 1) for (j in 2:(n-k)) {
@@ -207,7 +211,8 @@ rootS <- function(UT) {
 			else		     X[ii,il] * X[il,ij]
 		    }
 		}
-		X[ii,ij] <- solve(t(X[ii,ii]*I+X[ij,ij]),as.vector(S[ii,ij]-sumU))
+		X[ii,ij] <- solve(t(X[ii,ii]*I + X[ij,ij]),
+				  as.vector(S[ii,ij] - sumU))
 	    }
 	    ## Calculation for	2x1 Blocks
 	    else if (length(ij) == 1 & length(ii) == 2 ) {

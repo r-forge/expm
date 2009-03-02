@@ -1,13 +1,12 @@
+#### -------------------*- mode: R; kept-new-versions: 25; kept-old-versions: 20 -*-
+#### Exponential Condition Number
+#### ---------------------
 #### Compute the Exponential Condition Number
 #### ("1" and Frobenius-Norm) "exactly" and approximately.
 ####
 #### All algorithms are based on the Fréchet derivative,
 #### i.e., the expmCond() functions call expmFrechet()
 #### for the calculation of the Fréchet derivative.
-
-
-##>> FIXME:  1)  *one*  expCond(A, method = "...", ...)
-##>>         2)  allow     'expm = FALSE' to *not* return the expm.Higham08() matrix
 
 expmCond <- function(A, method = c("1.est", "F.est", "exact"),
                      expm = TRUE, abstol = 0.1, reltol = 1e-6,
@@ -40,7 +39,7 @@ expmCond <- function(A, method = c("1.est", "F.est", "exact"),
 
 ###------------------ expcond.r -------------------------------------------
 
-## Function for exact calculation of the Exponentialconditionnumber
+## Function for *eXact* (slow!) calculation of the Exponentialconditionnumber
 ## ("1" and Frobenius-Norm).
 ## R-Implementation of Higham's Algorithm from the book
 ## "Functions of Matrices - Theory and Computation", chapter 3.4, algorithm 3.17
@@ -71,11 +70,12 @@ expmCond <- function(A, method = c("1.est", "F.est", "exact"),
     }
 
     give <- match.arg(give)
+    jj <- 0
     for (j in  1:n) {
-        for (i in 1:n) {
-            calc <- expmFrechet(A, E.unit(i,j), expm=TRUE)
-            K[,(j-1)*n+i] <- as.vector(calc$Lexpm)
-        }
+	for (i in 1:n) {
+	    calc <- expmFrechet(A, E.unit(i,j), expm=(j == n) && (i == n))
+	    K[, (jj <- jj + 1)] <- calc$Lexpm
+	}
     }
     ##-------STEP 2 CALCULATE EXPONENTIALCONDITIONNUMBER ------------------------
 
@@ -123,20 +123,20 @@ expmCond <- function(A, method = c("1.est", "F.est", "exact"),
     V    <- calc$Lexpm
     G    <- sum(abs(V))
     Z    <- sign(V)
-    X    <- expmFrechet(tA,Z)$Lexpm
+    X    <- expmFrechet(tA,Z, expm=FALSE)$Lexpm
 
     k <- 2
     E0 <- matrix(0, n,n)
     repeat { ## at most steps k = 2, 3, 4, 5
         j <- which.max(as.vector(abs(X)))
         Ej <- E0; Ej[j] <- 1
-        V  <- expmFrechet(A,Ej)$Lexpm
+        V  <- expmFrechet(A,Ej, expm=FALSE)$Lexpm
         G  <- sum(abs(V))
         sV <- sign(V)
         if (identical(sV, Z) ||
             identical(sV,-Z)) break
         Z     <- sV
-        X     <- expmFrechet(tA,Z)$Lexpm
+        X     <- expmFrechet(tA,Z, expm=FALSE)$Lexpm
         k     <- k+1
         if (k > 5 || max(abs(X)) == X[j])
             break
@@ -149,7 +149,7 @@ expmCond <- function(A, method = c("1.est", "F.est", "exact"),
     for (l in 1:(n^2)) { ## FIXME: vectorize this!
         X[l] <- (-1)^(l+1) * (1+(l-1)/(n^2-1))
     }
-    X <- expmFrechet(A,X)$Lexpm
+    X <- expmFrechet(A,X, expm=FALSE)$Lexpm
     G. <- 2*sum(abs(X))/(3*n^2)
     if (G < G.) {
         message("'lucky guess' was better")
@@ -312,35 +312,37 @@ expmFrechet <- function(A,E, method = c("SPS","blockEnlarge"), expm = TRUE)
                    c(30240,15120,3360,420,30,1,0,0,0,0),
                    c(17297280,8648640,1995840,277200,25200,1512,56,1,0,0),
                    c(17643225600,8821612800,2075673600,302702400,30270240,
-                     2162160,110880,3960,90,1))
+                     2162160,110880,3960,90,1)) [l , ] # only need l-th row
 
         j  <- l*2+1
         P  <- I
-        U  <- C[l,2]*I
-        V  <- C[l,1]*I
+        U  <- C[2]*I
+        V  <- C[1]*I
         A2 <- A%*%A
         M2 <- A%*%E+E%*%A
         M  <- M2
-        LU <- C[l,4]*M
-        LV <- C[l,3]*M
+        LU <- C[4]*M
+        LV <- C[3]*M
 
-        for (k in seq_len(l-1)) {
+        oC <- 2
+        for (k in seq_len(l-1)) { ## oC == 2k
             ## PA e^A
             P  <- P%*%A2
-            U  <- U+C[l,(2*k)+2]*P
-            V  <- V+C[l,(2*k)+1]*P
+            U  <- U+C[oC+ 2]*P
+            V  <- V+C[oC+ 1]*P
 
             ## PA L(A,E)
             M  <- A2%*%M + M2%*%P
-            LU <- LU + C[l,(2*(k+1))+2]*M
-            LV <- LV + C[l,(2*(k+1))+1]*M
+            LU <- LU + C[oC+ 4]*M
+            LV <- LV + C[oC+ 3]*M
+            oC <- oC + 2
         }
         ## PA e^A & L(A,E)
         P  <- P %*% A2
-        U  <- U + C[l,(2*l)+2]*P
+        U  <- U + C[oC+ 2]*P
         LU <- A %*% LU + E %*% U
         U  <- A %*% U
-        V  <- V + C[l,(2*l)+1]*P
+        V  <- V + C[oC+ 1]*P
 
         X  <- solve(V-U, V+U)
         X2 <- solve(V-U, LU+LV + (LU-LV)%*%X)
@@ -356,8 +358,8 @@ expmFrechet <- function(A,E, method = c("SPS","blockEnlarge"), expm = TRUE)
         if (s > 0){
             s  <- ceiling(s)
             B  <- A/(2^s)
-            D  <- D/(2^s)}
-
+            D  <- D/(2^s)
+        }
         C. <- c(64764752532480000,32382376266240000,7771770303897600,1187353796428800,
                 129060195264000,10559470521600,670442572800,33522128640,1323241920,
                 40840800,960960,16380,182,1)
@@ -367,25 +369,25 @@ expmFrechet <- function(A,E, method = c("SPS","blockEnlarge"), expm = TRUE)
         B2  <- B%*%B
         B4  <- B2%*%B2
         B6  <- B2%*%B4
-        W1  <- C.[14]*B6+C.[12]*B4+C.[10]*B2
-        W2  <- C.[8]*B6+C.[6]*B4+C.[4]*B2+C.[2]*I
-        Z1  <- C.[13]*B6+C.[11]*B4+C.[9]*B2
-        Z2  <- C.[7]*B6+C.[5]*B4+C.[3]*B2+C.[1]*I
+        W1  <- C.[14]*B6+ C.[12]*B4+ C.[10]*B2
+        W2  <- C.[ 8]*B6+ C.[ 6]*B4+ C.[ 4]*B2+C.[2]*I
+        Z1  <- C.[13]*B6+ C.[11]*B4+ C.[ 9]*B2
+        Z2  <- C.[ 7]*B6+ C.[ 5]*B4+ C.[ 3]*B2+C.[1]*I
         W   <- B6%*%W1+W2
         U   <- B%*%W
         V   <- B6%*%Z1+Z2
 
         ## PA L(A,E)
-        M2  <- B%*%D+D%*%B
-        M4  <- B2%*%M2+M2%*%B2
-        M6  <- B4%*%M2+M4%*%B2
-        LW1 <- C.[14]*M6+C.[12]*M4+C.[10]*M2
-        LW2 <- C.[8]*M6+C.[6]*M4+C.[4]*M2
-        LZ1 <- C.[13]*M6+C.[11]*M4+C.[9]*M2
-        LZ2 <- C.[7]*M6+C.[5]*M4+C.[3]*M2
-        LW  <- B6%*%LW1+M6%*%W1+LW2
-        LU  <- B%*%LW+D%*%W
-        LV  <- B6%*%LZ1+M6%*%Z1+LZ2
+        M2  <- B%*%D + D%*%B
+        M4  <- B2%*%M2 + M2%*%B2
+        M6  <- B4%*%M2 + M4%*%B2
+        LW1 <- C.[14]*M6+ C.[12]*M4+ C.[10]*M2
+        LW2 <- C.[ 8]*M6+ C.[ 6]*M4+ C.[ 4]*M2
+        LZ1 <- C.[13]*M6+ C.[11]*M4+ C.[ 9]*M2
+        LZ2 <- C.[ 7]*M6+ C.[ 5]*M4+ C.[ 3]*M2
+        LW  <- B6%*%LW1 + M6%*%W1 + LW2
+        LU  <- B%*%LW + D%*%W
+        LV  <- B6%*%LZ1 + M6%*%Z1 + LZ2
 
         X   <- solve(V-U, V+U)
         X2  <- solve(V-U, LU+LV + (LU-LV)%*%X)

@@ -31,27 +31,26 @@ sqrtm <- function(x) {
 
     ##------- STEP 0: Schur Decomposition ---------------------------------------
 
-    stopifnot(require("Matrix")) # just for this:
-    Sch.x <- Schur(Matrix(x))
+    Sch.x <- Schur(Matrix(x)) ## <- {FIXME [Matrix]}
     ev <- Sch.x@EValues
-    if(any(Arg(ev) == pi)) # < FIXME ?
-	stop("'x' has negative real eigenvalues!")
+    if(getOption("verbose") && any(abs(Arg(ev) - pi) < 1e-7))
+        ## Let's see what works: temporarily *NOT* stop()ping :
+        message("'x' has negative real eigenvalues; probably ok")
 
     S <- as.matrix(Sch.x@T)
     Q <- as.matrix(Sch.x@Q)
 
-    ##---------STEP 1: Analyse block structure--------------------------------------
+    ##---------STEP 1: Analyse block structure-----------------------------------
 
     ## Count 2x2 blocks (as Schur(x) is the real Schur Decompostion)
-    k <- 0
-    for (i in seq_len(n-1)) {
-	if (S[i+1,i] != 0) k <- k+1
-    }
+    J.has.2 <- S[cbind(2:n, 1:(n-1))] != 0
+    k <- sum(J.has.2) ## := number of non-zero SUB-diagonals
+
     ## Generate Blockstructure and save it as R.index
     R.index <- vector("list",n-k)
-    i <- 1
     l <- 1
-    while(i < n) {
+    i <- 1
+    while(i < n) { ## i advances by 1 or 2, depending on 1- or 2- Jordan Block
 	if (S[i+1,i] == 0) {
 	    R.index[[l]] <- i
 	}
@@ -62,25 +61,27 @@ sqrtm <- function(x) {
 	i <- i+1
 	l <- l+1
     }
-    if (is.null(R.index[[n-k]]))
+    if (is.null(R.index[[n-k]])) { # needed; FIXME: should be able to "know"
+        ##message(sprintf("R.index[n-k = %d]] is NULL, set to n=%d", n-k,n))
 	R.index[[n-k]] <- n
+    }
 
-    ##---------STEP 2: Calculate diagonal elements/blocks---------------------------
+    ##---------STEP 2: Calculate diagonal elements/blocks------------------------
     ## Calculate the root of the diagonal blocks of the Schur Decompostion S
     I <- diag(2)
     X <- matrix(0,n,n)
     for (j in seq_len(n-k)) {
 	ij <- R.index[[j]]
 	if (length(ij) == 1) {
-	    X[ij,ij] <- sqrt(S[ij,ij])
+	    X[ij,ij] <- if((.s <- S[ij,ij]) < 0) sqrt(.s + 0i) else sqrt(.s)
 	}
 	else {
-	    ev1 <- Sch.x@EValues[ij][1]
+	    ev1 <- Sch.x@EValues[ij[1]]
 	    r1 <- Re(sqrt(ev1)) ## sqrt(<complex>) ...
 	    X[ij,ij] <- r1*I + 1/(2*r1)*(S[ij,ij] - Re(ev1)*I)
 	}
     }
-    ##---------STEP 3: Calculate superdiagonal elements/blocks----------------------
+    ##---------STEP 3: Calculate superdiagonal elements/blocks-------------------
 
     ## Calculate the remaining, not-diagonal blocks
     if (n-k > 1) for (j in 2:(n-k)) {
@@ -110,7 +111,8 @@ sqrtm <- function(x) {
 			else		      X[ii,il] * X[il,ij]
 		    }
 		}
-		X[ii,ij] <- solve(t(X[ii,ii]*I+X[ij,ij]),as.vector(S[ii,ij]-sumU))
+		X[ii,ij] <- solve(t(X[ii,ii]*I + X[ij,ij]),
+                                  as.vector(S[ii,ij] - sumU))
 	    }
 	    ## Calculation for	2x1 Blocks
 	    else if (length(ij) == 1 & length(ii) == 2 ) {
@@ -121,7 +123,7 @@ sqrtm <- function(x) {
 			else		      X[ii,il] * X[il,ij]
 		    }
 		}
-		X[ii,ij] <- solve(X[ii,ii]+X[ij,ij]*I,S[ii,ij]-sumU)
+		X[ii,ij] <- solve(X[ii,ii]+X[ij,ij]*I, S[ii,ij]-sumU)
 	    }
 	    ## Calculation for	2x2 Blocks with special equation for solver
 	    else if (length(ij) == 2 & length(ii) == 2 ) {
