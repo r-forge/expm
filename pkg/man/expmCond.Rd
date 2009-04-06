@@ -58,6 +58,9 @@ expmCond(A, method = c("1.est", "F.est", "exact"),
   Higham, N.~J. (2008).
   \emph{Functions of Matrices: Theory and Computation};
   Society for Industrial and Applied Mathematics, Philadelphia, PA, USA.
+
+  Michael Stadelmann (2009) \emph{Matrixfunktionen} ...
+  Master's thesis; see reference in \code{\link{expm.Higham08}}.
 }
 \author{
   Michael Stadelmann (final polish by Martin Maechler).

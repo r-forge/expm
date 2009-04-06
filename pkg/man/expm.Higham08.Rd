@@ -36,6 +36,13 @@ expm.Higham08(A, balancing = TRUE)
   Higham, N.~J. (2008).
   \emph{Functions of Matrices: Theory and Computation};
   Society for Industrial and Applied Mathematics, Philadelphia, PA, USA.
+
+  Michael Stadelmann (2009).
+  \emph{Matrixfunktionen; Analyse und Implementierung}.
+  [in German] Master's thesis and Research Report 2009-12, SAM, ETH Zurich;
+  \url{http://www.sam.math.ethz.ch/reports/2009}, or
+  \url{ftp://ftp.sam.math.ethz.ch/pub/sam-reports/reports/reports2009/2009-12.pdf}.
+
 }
 \author{
   Michael Stadelmann (final polish by Martin Maechler).
