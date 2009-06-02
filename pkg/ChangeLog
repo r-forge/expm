@@ -1,3 +1,7 @@
+2009-06-02  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* tests/exact-ex.R: move print() to see Mac OSX error
+
 2009-03-02  Martin Maechler  <maechler@stat.math.ethz.ch>
 
 	* R/sqrtm.R (sqrtm): allow negative eigenvalues, with a

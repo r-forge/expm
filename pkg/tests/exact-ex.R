@@ -180,19 +180,17 @@ Em.xct <- EmN / dN
 stopifnot(all.equal(E.m, Em.xct,
                     check.attributes = FALSE, tol= 1e-13))
 re.x <- sapply(expmL.wo.E, function(EXPM) relErr(Em.xct, EXPM(m)))
-re.x
+
 ## result depends quite a bit on platform:
 
 ## Pentium-M 32-bit ubuntu gave
 ##      Ward     s.P.s    s.P.sO     s.T.s    s.T.sO    hybrid
 ## 1.079e-16 4.505e-14 4.503e-14 3.716e-17 7.079e-18 1.079e-16
-
-## "Ward77" expm() is again more accurate than  s+Pade+s,
-## *but* s+Taylor+s is even more accurate
-
+## "Ward77": again more accurate than s+Pade+s, but s+Taylor+s is even more accurate
 ## but on 64-bit AMD Opterons [ option( digits = 3) ] :
 ##     Ward    s.P.s   s.P.sO sPs.H08. sPs.H08b    s.T.s   s.T.sO  Eigen   hybrid
 ## 4.42e-17 3.99e-17 3.99e-17 1.10e-16 1.10e-16 8.44e-17 8.44e-17     NA 4.42e-17
+re.x
 
 stopifnot(re.x[c("Ward", "sPs.H08.", "sPs.H08b")] < 3e-16)
 
