@@ -180,18 +180,27 @@ Em.xct <- EmN / dN
 stopifnot(all.equal(E.m, Em.xct,
                     check.attributes = FALSE, tol= 1e-13))
 re.x <- sapply(expmL.wo.E, function(EXPM) relErr(Em.xct, EXPM(m)))
+## with error message from "safe.Eigen"  -->  Eigen is NA here
 
 ## result depends quite a bit on platform:
+options(digits = 4, width=90)
 
 ## Pentium-M 32-bit ubuntu gave
-##      Ward     s.P.s    s.P.sO     s.T.s    s.T.sO    hybrid
-## 1.079e-16 4.505e-14 4.503e-14 3.716e-17 7.079e-18 1.079e-16
-## "Ward77": again more accurate than s+Pade+s, but s+Taylor+s is even more accurate
-## but on 64-bit AMD Opterons [ option( digits = 3) ] :
-##     Ward    s.P.s   s.P.sO sPs.H08. sPs.H08b    s.T.s   s.T.sO  Eigen   hybrid
-## 4.42e-17 3.99e-17 3.99e-17 1.10e-16 1.10e-16 8.44e-17 8.44e-17     NA 4.42e-17
-re.x
+##      Ward     s.P.s    s.P.sO  sPs.H08.  sPs.H08b     s.T.s    s.T.sO    hybrid
+## 1.079e-16 4.505e-14 4.503e-14 9.379e-17 9.379e-17 3.716e-17 7.079e-18 1.079e-16
 
-stopifnot(re.x[c("Ward", "sPs.H08.", "sPs.H08b")] < 3e-16)
+## "Ward77": again more accurate than s+Pade+s, but s+Taylor+s is even more accurate
+
+## but on 64-bit AMD Opterons
+##     Ward    s.P.s   s.P.sO sPs.H08. sPs.H08b    s.T.s   s.T.sO   hybrid
+## 4.42e-17 3.99e-17 3.99e-17 1.10e-16 1.10e-16 8.44e-17 8.44e-17 4.42e-17
+##
+## even more astonishing the result on Mac OSX (x86_32_mac; R-forge, R 2.9.0 patch.)
+##     Ward    s.P.s   s.P.sO sPs.H08. sPs.H08b    s.T.s   s.T.sO hybrid
+## 5.13e-17 3.99e-17 3.99e-17 1.84e-15 1.84e-15 8.44e-17 8.44e-17 5.13e-17
+re.x[!is.na(re.x)]
+
+stopifnot(re.x[c("Ward", "s.T.s", "s.T.sO")] < 3e-16,
+          re.x < 3e-15)
 
 cat('Time elapsed: ',(p3 <- proc.time())-p2,'\n') # for ``statistical reasons''

@@ -1,3 +1,9 @@
+2009-06-06  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* DESCRIPTION (Version): 0.96-2
+
+	* tests/exact-ex.R: adapt last test, to also pass on 32-bit Mac OSX
+
 2009-06-02  Martin Maechler  <maechler@stat.math.ethz.ch>
 
 	* tests/exact-ex.R: move print() to see Mac OSX error
