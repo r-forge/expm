@@ -13,7 +13,7 @@
   \title{Using \pkg{expm} in packages}
   \author{Christophe Dutang \\ ENSIMAG, Grenoble INP \\[3ex]
     Vincent Goulet \\ École d'actuariat, Université Laval}
-  \date{}
+  \date{Jan. 2008 \ {\footnotesize (added note in June 2010)}}
 
   \newcommand{\code}[1]{\texttt{#1}}
   \newcommand{\proglang}[1]{\textsf{#1}}
@@ -28,7 +28,7 @@
 
 \section{Introduction}
 
-The \pkg{expm} packages provides an \proglang{R} function \code{expm}
+The \pkg{expm} package provides an \proglang{R} function \code{expm}
 to compute the matrix exponential of a real, square matrix. The matrix
 exponential of a matrix $\mat{A}$ is defined as
 \begin{align*}
@@ -44,7 +44,7 @@ efforts.
 
 \section{Description of the functions}
 
-The \proglang{R} function \texttt{expm} takes in argument a real,
+The \proglang{R} function \texttt{expm} takes as argument a real,
 square matrix and returns its exponential. Dimension names are
 preserved:
 <<echo=TRUE>>=
@@ -55,6 +55,19 @@ dimnames(m) <- list(letters[1:3], LETTERS[1:3])
 m
 expm(m)
 @
+
+\bigskip
+
+%% manual centerig of "overlapping" box
+\hspace*{-.12\textwidth}% .08 = .16 / 2
+\fbox{\begin{minipage}{1.16\textwidth}%% wider than the text!
+  Note that the remainder of this text \textbf{mainly} relates to
+  \code{expm(., method = "Ward77")}, i.e., the method of \cite{Ward:77} which
+  is no longer the default method, as e.g., \code{method = "Higham08"} has
+  found to be (``uniformly'') superior, see \cite{Higham:2008}.
+\end{minipage}}
+
+\bigskip
 
 The actual computational work is done in \proglang{C} by a routine
 defined as
