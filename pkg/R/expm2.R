@@ -44,9 +44,7 @@ expm.Higham08 <- function(A, balancing=TRUE)
     ##--------STEP 1 and STEP 2 SCALING & PADÉ APPROXIMATION--------------------
 
     ## Informations about the given matrix
-
-    stopifnot(require("Matrix"))        # just for this:
-    nA <- norm(A, "1")
+    nA <- Matrix::norm(A, "1")
 
     ## try to remain in the same matrix class system:
     I <- if(is(A,"Matrix")) Diagonal(n) else diag(n)

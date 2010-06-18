@@ -1,7 +1,7 @@
 Package: expm
 Type: Package
 Title: Matrix exponential
-Version: 0.96-2
+Version: 0.98-0
 Date: 2009-06-06
 Author: Vincent Goulet, Christophe Dutang, Martin Maechler,
 	David Firth, Marina Shapira, Michael Stadelmann
