@@ -11,11 +11,6 @@ sqrtm(x)
 \arguments{
   \item{x}{a square matrix.}
 }
-\references{
-  Higham, N.~J. (2008).
-  \emph{Functions of Matrices: Theory and Computation};
-  Society for Industrial and Applied Mathematics, Philadelphia, PA, USA.
-}
 \details{
   The matrix square root \eqn{S} of \eqn{M}, \eqn{S = sqrtm(M)} is
   defined as one (the \dQuote{principal}) \eqn{S} such that
@@ -25,6 +20,11 @@ sqrtm(x)
 }
 \value{
   A matrix \sQuote{as \code{x}} with the matrix sqrt of \code{x}.
+}
+\references{
+  Higham, N.~J. (2008).
+  \emph{Functions of Matrices: Theory and Computation};
+  Society for Industrial and Applied Mathematics, Philadelphia, PA, USA.
 }
 \seealso{
   \code{\link{expm}}, \code{\link{logm}}

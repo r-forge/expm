@@ -88,6 +88,9 @@ expm(x, method = c("Higham08.b", "Higham08",
 
   The \code{"hybrid_Eigen_Ward"} method by Christophe Dutang is a C
   translation of \code{"R_Eigen"} method by Martin Maechler.
+
+  The \code{"Higham08"} and \code{"Higham08.b"} (current default) were
+  written by Michael Stadelmann, see \code{\link{expm.Higham08}}.
 }
 \references{
   Ward, R. C. (1977).  Numerical computation
@@ -96,11 +99,11 @@ expm(x, method = c("Higham08.b", "Higham08",
 
   Moler, C and van Loan, C (2003).  Nineteen dubious ways to compute
   the exponential of a matrix, twenty-five years later.
-  \emph{SIAM Review} \bold{45},
-  3--49.  At
+  \emph{SIAM Review} \bold{45}, 3--49.  At
   \url{http://epubs.siam.org/sam-bin/dbq/article/41801}
 }
-\note{ For a good general discussion of the matrix exponential
+\note{
+  For a good general discussion of the matrix exponential
   problem, see Moler and van Loan (2003).
 }
 \examples{

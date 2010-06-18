@@ -3,8 +3,8 @@
 \alias{logm.Higham08}
 \title{Matrix Logarithm}
 \description{
-  This function computes the matrix logarithm of a square matrix.
-  The logarithm of a matrix \eqn{A} is \eqn{L} such that \eqn{A= e^L}
+  This function computes the (principal) matrix logarithm of a square matrix.
+  A logarithm of a matrix \eqn{A} is \eqn{L} such that \eqn{A= e^L}
   (meaning \code{A == expm(L)}), see the documentation for the matrix
   exponential, \code{\link{expm}}, which can be defined
   as \deqn{e^L := \sum_{r=0}^\infty L^r/r! .}{sum[r = 0,..,Inf; L^r/r!] .}
@@ -30,6 +30,20 @@ logm.Higham08(x)
   \item{tol}{a given tolerance used to check if \code{x} is
     computationally singular when \code{method = "Eigen"}.}
 }
+\details{
+  The exponential of a matrix is defined as the infinite Taylor series
+  \deqn{e^M = \sum_{k = 1}^\infty \frac{M^k}{k!}.}{%
+    exp(M) = I + M + M^2/2! + M^3/3! + \dots.}
+  The matrix logarithm of \eqn{A} is a matrix \eqn{M} such that
+  \eqn{exp(M) = A}. Note that there typically are an infinite number
+  number of such matrices, and we compute the \emph{prinicipal} matrix
+  logarithm, see the references.
+
+  Method \code{"Higham08"} works via \dQuote{\emph{inverse} scaling and
+    squaring}, and from the Schur decomposition, applying a matrix
+  square root computation.  It is somewhat slow but also works for
+  non-diagonalizable matrices.
+}
 \references{
   Higham, N.~J. (2008).
   \emph{Functions of Matrices: Theory and Computation};
@@ -37,20 +51,6 @@ logm.Higham08(x)
 
   The Matrix Logarithm is very nicely defined by Wikipedia,
   \url{http://en.wikipedia.org/wiki/Matrix_logarithm}.
-}
-\details{
-  The exponential of a matrix is defined as the infinite Taylor series
-  \deqn{e^M = \sum_{k = 1}^\infty \frac{M^k}{k!}.}{%
-    exp(M) = I + M + M^2/2! + M^3/3! + \dots}. The logarithm matrix of \eqn{A} is
-    the matrix \eqn{M} such that \eqn{exp(M) = A}.
-
-  Method \code{"Higham08"} works via \dQuote{\emph{inverse} scaling and
-    squaring}, and from the Schur decomposition, applying a matrix
-  square root computation.  It is somewhat slow but also works for
-  non-diagonalizable matrices.
-
-  See the package vignette for details on the algorithms and calling the
-  function from external packages.
 }
 \value{
   A matrix \sQuote{as \code{x}} with the matrix logarithm of \code{x},

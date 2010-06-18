@@ -91,6 +91,7 @@ sort(RE)# Ward + both sps.H08 are best; s.P.s fair, Eigen (and hybrid): ~1e-9
 eps <- 10^-(1:18)
 t.m2 <- t(sapply(eps, re.m2ex3, EXPMlist = expmList))
 ## --> 3 error messages from solve(V), 5 error messages from try(. "R_Eigen" ...)
+
 cbind(sort(apply(log(t.m2),2, median, na.rm=TRUE)))
 ## 'na.rm=TRUE' needed for Eigen which blows up for the last 3 eps
 t.m2.ranks <- sort(rowMeans(apply(t.m2, 1, rank)))
@@ -110,17 +111,18 @@ print(t.m2[, names(t.m2.ranks)[1:8]], digits = 3)
 ##     2nd class  s.T.s and s.P.s
 ##    "bad" : hybrid and Eigen
 
-if(FALSE){
-    library(RColorBrewer)
-##     Bcol <- brewer.pal(ncol(t.m2),"Dark2")
+if(require(RColorBrewer)) {
+    ## Bcol <- brewer.pal(ncol(t.m2),"Dark2")
     Bcol <- brewer.pal(ncol(t.m2),"Set1")
+} else {
+    ## 7 from Dark2
+    ## Bcol <- c("#1B9E77", "#D95F02", "#7570B3", "#E7298A",
+    ##		 "#66A61E", "#E6AB02", "#A6761D")
+    ## Rather: those from "Set1"
+    Bcol <- c("#E41A1C", "#377EB8", "#4DAF4A",
+	      "#984EA3", "#FF7F00", "#FFFF33",
+	      "#A65628", "#F781BF", "#999999")
 }
-## 7 from Dark2
-## Bcol <- c("#1B9E77", "#D95F02", "#7570B3", "#E7298A",
-##           "#66A61E", "#E6AB02", "#A6761D")
-Bcol <- c("#E41A1C", "#377EB8", "#4DAF4A",
-	  "#984EA3", "#FF7F00", "#FFFF33",
-	  "#A65628", "#F781BF", "#999999")
 
 matplot(eps, t.m2, type = "b", log = "xy", col=Bcol, lty = 1:9, pch=1:9,
         axes=FALSE, frame = TRUE,
@@ -196,6 +198,9 @@ options(digits = 4, width=90)
 ## Pentium-M 32-bit ubuntu gave
 ##      Ward     s.P.s    s.P.sO  sPs.H08.  sPs.H08b     s.T.s    s.T.sO    hybrid
 ## 1.079e-16 4.505e-14 4.503e-14 9.379e-17 9.379e-17 3.716e-17 7.079e-18 1.079e-16
+## 32-bit Quad-Core AMD Opteron 2380 (Linux 2.6.30.10-105.2.23.fc11.i686.PAE):
+##      Ward     s.P.s    s.P.sO  sPs.H08.  sPs.H08b     s.T.s    s.T.sO    hybrid
+## 1.079e-16 4.505e-14 4.503e-14 9.379e-17 9.379e-17 3.716e-17 7.079e-18 1.079e-16
 
 ## "Ward77": again more accurate than s+Pade+s, but s+Taylor+s is even more accurate
 
@@ -206,10 +211,11 @@ options(digits = 4, width=90)
 ## even more astonishing the result on Mac OSX (x86_32_mac; R-forge, R 2.9.0 patch.)
 ##     Ward    s.P.s   s.P.sO sPs.H08. sPs.H08b    s.T.s   s.T.sO hybrid
 ## 5.13e-17 3.99e-17 3.99e-17 1.84e-15 1.84e-15 8.44e-17 8.44e-17 5.13e-17
+
 which(is.na(re.x))
 (re.x <- re.x[!is.na(re.x)])
 
 stopifnot(re.x[c("Ward", "s.T.s", "s.T.sO")] < 3e-16,
-          re.x < 3e-15)
+          re.x < 1e-13)# <- 32-bit needed 0.451e-14
 
 cat('Time elapsed: ',(p3 <- proc.time())-p2,'\n') # for ``statistical reasons''

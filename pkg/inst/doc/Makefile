@@ -11,5 +11,7 @@ all: expm.pdf
 	$(TEXI2DVI) $<
 
 clean:
-	$(RM) *-[0-9][0-9][0-9].eps *-[0-9][0-9][0-9].pdf *.aux *.log  *.blg \
-	*.bbl *.out *.tex *.rel *~ auto Rplots.ps
+	$(RM) *-[0-9][0-9][0-9].pdf *.log *.blg *.out *.rel Rplots.ps
+
+realclean: clean
+	$(RM) *.tex *.aux *.bbl auto *~
