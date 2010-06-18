@@ -6,7 +6,7 @@
   This function computes the exponential of a square matrix
   \eqn{A}, defined as the sum from \eqn{r=0} to infinity of
   \eqn{A^r/r!}.
-  Several methods are provided. The Taylor series and Pad\'e
+  Several methods are provided. The Taylor series and Padé
   approximation are very importantly combined with scaling and squaring.
 }
 \usage{

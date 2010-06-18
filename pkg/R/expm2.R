@@ -34,7 +34,6 @@ expm.Higham08 <- function(A, balancing=TRUE)
     ## which is needed for the dgebal function
 
     if (balancing) {
-        stopifnot(require(expm))
         baP <- dgebal(A,     "P")
         baS <- dgebal(baP$z, "S")
         A <- baS$z
