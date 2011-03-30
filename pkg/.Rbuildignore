@@ -1,5 +1,6 @@
 Misc
 foo
+.*\.f+
 .*_fail
 inst/doc/auto
 .*\.aux
