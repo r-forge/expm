@@ -1,3 +1,13 @@
+2011-08-27  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* R/expm.R (expm): add new method "PadeRBS" (Roger B. Sidje),
+	interfacing to the corresponding Fortran code.
+	* src/init.c, src/expm.h: also namespace-ify the Fortran symbols.
+
+2011-08-26  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* NAMESPACE: also import solve() from Matrix, for sparse expm()
+
 2011-03-30  Martin Maechler  <maechler@stat.math.ethz.ch>
 
 	* DESCRIPTION (Version): 0.98-4

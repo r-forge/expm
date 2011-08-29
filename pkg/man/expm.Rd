@@ -11,7 +11,7 @@
 }
 \usage{
 expm(x, method = c("Higham08.b", "Higham08",
-                   "Ward77", "Pade", "Taylor", "PadeO", "TaylorO",
+                   "Ward77", "PadeRBS", "Pade", "Taylor", "PadeO", "TaylorO",
                    "R_Eigen", "R_Pade", "R_Ward77", "hybrid_Eigen_Ward"),
      order = 8, trySym = TRUE, tol = .Machine$double.eps,
      preconditioning = c("2bal", "1bal", "buggy"))
@@ -41,7 +41,7 @@ expm(x, method = c("Higham08.b", "Higham08",
   \item{order}{an integer, the order of approximation to be used, for
     the "Pade" and "Taylor" methods.  The best value for this depends on
     machine precision (and slightly on \code{x}) but for the current
-    double precision arithmetic, one recommendation %% and Matlab !!!
+    double precision arithmetic, one recommendation (and the Matlab implementations)
     uses \code{order = 6} unconditionally;\cr
     %% NOTA BENE:  Matlab uses order = 6  !!!
     our default, \code{8}, is from Ward(1977, p.606)'s recommendation.
@@ -79,6 +79,9 @@ expm(x, method = c("Higham08.b", "Higham08",
   from the implementation of the corresponding Octave function
   contributed by A. Scottedward Hodel \email{A.S.Hodel@eng.auburn.edu}.
 
+  The \code{"PadeRBS"} method:\cr
+  Roger B. Sidje, see the EXPOKIT reference.
+
   The \code{"PadeO"} and  \code{"TaylorO"} methods:\cr
   Marina Shapira (U Oxford, UK) and David Firth (U Warwick, UK);
 
@@ -96,6 +99,10 @@ expm(x, method = c("Higham08.b", "Higham08",
   Ward, R. C. (1977).  Numerical computation
   of the matrix exponential with accuracy estimate.
   \emph{SIAM J. Num. Anal.} \bold{14}, 600--610.
+
+  Roger B. Sidje (1998).
+  EXPOKIT: Software package for computing matrix exponentials.
+  ACM - Transactions on Mathematical Software \bold{24}(1), 130--156.
 
   Moler, C and van Loan, C (2003).  Nineteen dubious ways to compute
   the exponential of a matrix, twenty-five years later.
@@ -128,15 +135,13 @@ expm(test1, method="Pade")
 ## Compare with the naive "R_Eigen" method:
 try(
 expm(test1, method="R_Eigen")
-) ## now gives an error from solve !
-##
-## older result was
+) ## platform depently, sometimes gives an error from solve
+## or is accurate or one older result was
 ##                   [,1]                [,2]               [,3]
 ##[1,] 147.86662244637003  88.500223574029647 103.39983337000028
 ##[2,] 127.78108552318220 117.345806155250600  90.70416537273444
 ##[3,] 127.78108552318226  90.384173332156763 117.66579819582827
 ## -- hopelessly inaccurate in all but the first column.
-##
 ##
 ## ----------------------------
 ## Test case 2 from Ward (1977)

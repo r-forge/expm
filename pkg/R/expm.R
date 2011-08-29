@@ -41,14 +41,16 @@ expm.s.Pade.s <- function(x, order, n=nrow(x)) {
 
 
 expm <- function(x, method = c("Higham08.b", "Higham08",
-		    "Ward77", "Pade", "Taylor", "PadeO", "TaylorO",
+		    "Ward77", "PadeRBS", "Pade", "Taylor", "PadeO", "TaylorO",
 		    "R_Eigen", "R_Pade", "R_Ward77", "hybrid_Eigen_Ward"),
 		 order = 8,
 		 trySym = TRUE, tol = .Machine$double.eps,
 		 preconditioning = c("2bal", "1bal", "buggy"))
 {
-    if (!is.matrix(x))
-	stop("invalid (non-matrix) argument")
+    ## some methods work for "matrix" or "Matrix" matrices:
+    stopifnot(is.numeric(x) || is(x, "dMatrix"),
+	      length(d <- dim(x)) == 2)
+    if (d[1] != d[2]) stop("matrix not square")
     method <- match.arg(method)
     switch(method,
 	   "Higham08.b" = expm.Higham08(x, balancing = TRUE)
@@ -59,6 +61,7 @@ expm <- function(x, method = c("Higham08.b", "Higham08",
 	       ## AUTHORS: Christophe Dutang, Vincent Goulet at act ulaval ca
 	       ##	 built on "Matrix" package, built on 'octave' code
 	       ##	 Martin Maechler, for the preconditioning etc
+               stopifnot(is.matrix(x))
 	       switch(match.arg(preconditioning),
 		      "2bal" = .Call(do_expm, x, "Ward77"),
 		      "1bal" = .Call(do_expm, x, "Ward77_1"),
@@ -82,6 +85,7 @@ expm <- function(x, method = c("Higham08.b", "Higham08",
 	       ## AUTHOR: Christophe Dutang
 	       ## matrix exponential using eigenvalues / spectral decomposition and
 	       ## Ward(1977) algorithm if x is numerically non diagonalisable
+               stopifnot(is.matrix(x))
 	       .Call("do_expm_eigen", x, tol)
 	   },
 	   "R_Pade"= { ## use scaling + Pade + squaring with R code:
@@ -92,17 +96,12 @@ expm <- function(x, method = c("Higham08.b", "Higham08",
 	       ## by Stig Mortensen <sbm@imm.dtu.dk>,
 	       ## prettified by MM -- works for "matrix" or "Matrix" matrices !
 
-	       stopifnot(is.numeric(x) || is(x, "dMatrix"),
-			 length(d <- dim(x)) == 2, d[1] == d[2],
-			 order >= 2)
-
+	       stopifnot(order >= 2)
 	       expm.s.Pade.s(x, order, n=d[1])
 	   },
 	   "R_Ward77" = { ## R implementation of "Ward(1977)"
 	       ## also works for "Matrix" matrices
-	       stopifnot(is.numeric(x) || is(x, "dMatrix"),
-			 length(d <- dim(x)) == 2, d[1] == d[2],
-			 order >= 2)
+	       stopifnot(order >= 2)
 	       n <- d[1]
 	       ## Preconditioning  Step 1: shift diagonal by average diagonal
 	       trShift <- sum(d.x <- diag(x))
@@ -149,30 +148,38 @@ expm <- function(x, method = c("Higham08.b", "Higham08",
 		   exp(trShift) * x
 	       }
 	       else x
-	   }
+	   },
+	   "PadeRBS" =  { ## the "expofit" method by  Roger B. Sidje (U.Queensland, AU)
+	       stopifnot(is.matrix(x),
+			 (order <- as.integer(order)) >= 1)
+	       storage.mode(x) <- "double"
+	       Fobj <- .Fortran(matexpRBS,
+				order,		   # IDEG  1
+				as.integer(d[1]),  # M	   2
+				T = 1.,		   # T	   3
+				H = x,		   # H	   4
+				iflag = integer(1) # IFLAG 5
+				)[c("H","iflag")]
+	       if(Fobj[["iflag"]] < 0)
+		   stop("Unable to determine matrix exponential")
+	       Fobj[["H"]]
+           }
 	   , { ## the "mexp" methods by
 	       ## AUTHORS: Marina Shapira and David Firth --------------
-
-	       dx <- dim(x)
-	       if (dx[1] != dx[2])
-		   stop("matrix not square")
-	       if (!is.numeric(order) || order != as.integer(order) || order < 0)
-		   stop("order must be an integer number >= 0")
-
+               stopifnot(is.matrix(x))
 	       storage.mode(x) <- "double"
 	       order <- as.integer(order)
 	       ## MM:	a "silly"  way to code the method / order
-	       ntaylor <- npade <- as.integer(0)
+	       ntaylor <- npade <- 0L
 	       if (substr(method,1,4) == "Pade")
 		   npade <- order else ntaylor <- order
 	       res <- .Fortran(if(identical(grep("O$", method), 1L))
-			       "matrexpO" else "matrexp",
+			       matrexpO else matrexp,
 			       X = x,
-			       size = dx[1],
+			       size = d[1],
 			       ntaylor,
 			       npade,
-			       accuracy = double(1),
-			       PACKAGE = "expm")[c("X", "accuracy")]
+			       accuracy = double(1))[c("X", "accuracy")]
 	       structure(res$X, accuracy = res$accuracy)
 	   })## end{switch}
 
