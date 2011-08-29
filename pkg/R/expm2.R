@@ -34,7 +34,7 @@ expm.Higham08 <- function(A, balancing=TRUE)
     ## which is needed for the dgebal function
 
     if (balancing) {
-        baP <- dgebal(A,     "P")
+        baP <- dgebal(A,     "P")# -> error for non-classical matrix  -- "FIXME": dgebal()
         baS <- dgebal(baP$z, "S")
         A <- baS$z
     }

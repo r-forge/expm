@@ -20,10 +20,19 @@ is.all.equal3 <- function(x,y,z, tol = .Machine$double.eps^0.5)
 is.all.equal4 <- function(x,y,z,u, tol = .Machine$double.eps^0.5)
     is.all.equal3(x,y,z, tol=tol) && isTRUE(all.equal(z,u, tol=tol))
 
-
 ## The relative error typically returned by all.equal:
 relErr <- function(target, current)
     mean(abs(target - current)) / mean(abs(target))
+
+showProc.time <- local({ ## function + 'pct' variable
+    pct <- proc.time()
+    function(final="\n") { ## CPU elapsed __since last called__
+	ot <- pct ; pct <<- proc.time()
+	## 'Time ..' *not* to be translated:  tools::Rdiff() skips its lines!
+	cat('Time elapsed: ', (pct - ot)[1:3], final)
+    }
+})
+
 
 expm.t.identity <- function(x, method,
                             tol = .Machine$double.eps^0.5,

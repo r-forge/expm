@@ -2,13 +2,39 @@
 
 library(expm)
 
+options(digits = 4, width = 90, keep.source = FALSE)
+
 source(system.file("test-tools.R", package = "expm"))## -> assertError(), rMat()
 source(system.file("demo", "exact-fn.R", package = "expm"))
 
+re.nilA3 <- function(xyz, EXPMlist)
+{
+    stopifnot(is.list(EXPMlist))
+    r <- do.call(nilA3, as.list(xyz))
+    sapply(EXPMlist, function(Efn) relErr(r$expA, Efn(r$A)))
+}
+
+re.facMat <- function(n, EXPMlist, rFUN = rnorm, ...)
+{
+    stopifnot(is.list(EXPMlist))
+    r <- facMat(n, rFUN, ...)
+    vapply(EXPMlist, function(EXPM) {
+	ct <- system.time(E <- EXPM(r$A), gc = FALSE)[[1]]
+	c(relErr = relErr(r$expA, E), c.time = ct)
+    }, double(2))
+}
+
+re.m2ex3 <- function(eps, EXPMlist)
+{
+    stopifnot(is.list(EXPMlist))
+    r <- m2ex3(eps)
+    sapply(EXPMlist, function(EXPM) relErr(r$expA, EXPM(r$A)))
+}
+
 set.seed(321)
 re <- replicate(1000,
-                c(re.nilA3(rlnorm(3),function(x)expm(x,"Pade")),
-                  re.nilA3(rnorm(3), function(x)expm(x,"Pade"))))
+                c(re.nilA3(rlnorm(3),list(function(x)expm(x,"Pade"))),
+                  re.nilA3(rnorm(3), list(function(x)expm(x,"Pade")))))
 
 summary(t(re))
 stopifnot(rowMeans(re) < 1e-15,
@@ -16,14 +42,13 @@ stopifnot(rowMeans(re) < 1e-15,
           apply(re, 1, quantile, 0.90) < 2e-15,
           apply(re, 1, max) < c(4e-14, 6e-15))
 
-cat('Time elapsed: ', (p1 <- proc.time()),'\n') # for ``statistical reasons''
+showProc.time()
 
-
-## Check *many* random nilpotent matrices:
+## Check *many* random nilpotent  3 x 3  matrices:
 set.seed(321)
 RE <- replicate(1000,
-                c(re.nilA3(rlnorm(3), function(x) expm(x, "Ward77")),
-                  re.nilA3(rnorm(3),  function(x) expm(x, "Ward77"))))
+                c(re.nilA3(rlnorm(3), list(function(x) expm(x, "Ward77"))),
+                  re.nilA3(rnorm(3),  list(function(x) expm(x, "Ward77")))))
 stopifnot(rowMeans(RE) < 1e-15,
           apply(RE, 1, quantile, 0.80) < 1e-16,
           apply(RE, 1, quantile, 0.90) < 2e-15,
@@ -36,7 +61,7 @@ print(summary(c(re - RE)) / epsC)
 ##       Min.    1st Qu.     Median       Mean    3rd Qu.       Max.
 ## -0.6183442  0.0000000  0.0000000  1.3650410  0.1399719 94.9809161
 
-cat('Time elapsed: ',(p2 <- proc.time())-p1,'\n') # for ``statistical reasons''
+showProc.time()
 
 ###--- A second group --- where we know the diagonalization of A ---
 
@@ -48,8 +73,9 @@ if(!require("Matrix"))
 
 ## rMat() relies on Matrix::rcond():
 ## Now with the change default rcondMin, this "works"
-system.time(R40 <- rMat(40))
-system.time(R80 <- rMat(80))
+R40 <- rMat(40)
+R80 <- rMat(80)
+showProc.time()
 
 expm.safe.Eigen <- function(x, silent = FALSE) {
     r <- try(expm::expm(x, "R_Eigen"), silent = silent)
@@ -60,6 +86,7 @@ expmList <-
     list(Ward  = function(x) expm::expm(x, "Ward77"),
 	 s.P.s = function(x) expm::expm(x, "Pade"),
 	 s.P.sO= function(x) expm::expm(x, "PadeO"),
+	 s.P.sRBS= function(x) expm::expm(x, "PadeRBS"),
 	 sPs.H08.= function(x) expm::expm.Higham08(x, balancing=FALSE),
 	 sPs.H08b= function(x) expm::expm.Higham08(x, balancing= TRUE),
 	 s.T.s = function(x) expm::expm(x, "Taylor"),
@@ -75,8 +102,45 @@ re.facMat(20, expmList)
 fRE <- replicate(100, re.facMat(20, expmList))
 
 ## Now look at that:
-boxplot(t(fRE), log="y", notch=TRUE,
+boxplot(t(fRE["relErr",,]), log="y", notch=TRUE,
         main = "relative errors for 'random' eigen-ok 20 x 20 matrix")
+
+showProc.time()
+
+str(rf100 <- replicate(20, re.facMat(100, expmList)))
+1000*t(apply(rf100["c.time",,], 1, summary))
+## lynne {Linux 2.6.34.7-56.fc13.x86_64 --- AMD Phenom II X4 925}:
+##          Min. 1st Qu. Median  Mean 3rd Qu. Max.
+## Ward       23      24   24.5  24.4    25.0   25
+## s.P.s     107     109  109.0 109.0   109.0  112
+## s.P.sO    188     190  191.0 192.0   193.0  198
+## s.P.sRBS   17      18   19.0  18.9    19.2   21
+## sPs.H08.   15      17   18.0  17.6    18.0   19
+## sPs.H08b   18      18   19.0  23.4    20.0  107
+## s.T.s      44      45   45.0  45.6    46.0   48
+## s.T.sO     96      98   99.0 100.0   100.0  116
+## Eigen      18      19   20.0  24.4    21.0  109
+## hybrid     40      42   42.0  47.1    44.0  133
+
+##--> take out the real slow ones for the subsequent tests:
+`%w/o%` <- function(x, y) x[!x %in% y] #--  x without y
+(nms.swift <- names(expmList) %w/o%
+ c("s.P.s", "s.P.sO", "s.T.s", "s.T.sO"))
+expmL.swift <- expmList[nms.swift]
+
+## 12 replicates is too small .. but then it's too slow otherwise:
+rf400 <- replicate(12, re.facMat(400, expmL.swift))
+1000*t(apply(rf400["c.time",,], 1, summary))
+## lynne:
+##          Min. 1st Qu. Median Mean 3rd Qu. Max.
+## Ward     1740    1790   1830 1820    1860 1900
+## s.P.sRBS 1350    1420   1440 1430    1450 1460
+## sPs.H08. 1020    1030   1130 1140    1210 1290
+## sPs.H08b 1120    1130   1220 1220    1300 1390
+## Eigen     962     977    989  992    1000 1030
+## hybrid   2740    2800   2840 2840    2890 2910
+
+showProc.time()
 
 ## Now  try an example with badly conditioned "random" M matrix...
 ## ...
@@ -91,6 +155,8 @@ sort(RE)# Ward + both sps.H08 are best; s.P.s fair, Eigen (and hybrid): ~1e-9
 eps <- 10^-(1:18)
 t.m2 <- t(sapply(eps, re.m2ex3, EXPMlist = expmList))
 ## --> 3 error messages from solve(V), 5 error messages from try(. "R_Eigen" ...)
+
+showProc.time()
 
 cbind(sort(apply(log(t.m2),2, median, na.rm=TRUE)))
 ## 'na.rm=TRUE' needed for Eigen which blows up for the last 3 eps
@@ -194,8 +260,7 @@ stopifnot(all.equal(E.m, Em.xct,
 re.x <- sapply(expmL.wo.E, function(EXPM) relErr(Em.xct, EXPM(m)))
 ## with error message from "safe.Eigen"  -->  Eigen is NA here
 
-## result depends quite a bit on platform:
-options(digits = 4, width=90)
+## result depends quite a bit on platform
 
 ## Pentium-M 32-bit ubuntu gave
 ##      Ward     s.P.s    s.P.sO  sPs.H08.  sPs.H08b     s.T.s    s.T.sO    hybrid
@@ -220,4 +285,5 @@ which(is.na(re.x))
 stopifnot(re.x[c("Ward", "s.T.s", "s.T.sO")] < 3e-16,
           re.x < 1e-13)# <- 32-bit needed 0.451e-14
 
-cat('Time elapsed: ',(p3 <- proc.time())-p2,'\n') # for ``statistical reasons''
+showProc.time()
+
