@@ -71,6 +71,10 @@ expm(x, method = c("Higham08.b", "Higham08",
 \seealso{
   The package vignette for details on the algorithms and calling the
   function from external packages.
+
+  \code{\link{expAtv}(A,v,t)} computes \eqn{e^{At} v} (for scalar
+  \eqn{t} and \eqn{n}-vector \eqn{v}) \emph{directly} and more
+  efficiently than computing \eqn{e^{At}}.
 }
 \author{
   The \code{"Ward77"} method:\cr

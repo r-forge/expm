@@ -6,7 +6,7 @@ importFrom("Matrix", Schur, norm,
 	   Matrix)# <- only in	Schur(Matrix(.))
 
 ### Exports
-export(expm)
+export(expm, expAtv)
 export("%^%")
 export(dgebal)
 export(logm)
