@@ -62,8 +62,14 @@ expm(x, method = c("Higham08.b", "Higham08",
     exp(M) = I + M + M^2/2! + M^3/3! + \dots}
 
   For the "Pade" and "Taylor" methods, there is an \code{"accuracy"}
-  attribute of the result. It is an upper bound for the L2 norm of the
+  attribute of the result.  It is an upper bound for the L2 norm of the
   Cauchy error \code{expm(x, *, order + 10) - expm(x, *, order)}.
+
+  Currently, only algorithms which are \emph{\dQuote{\R-code only}} accept \emph{sparse}
+  matrices (see the
+  \code[Matrix:sparseMatrix-class]{\link{sparseMatrix}} class in package
+  \pkg{Matrix}), i.e., currently only \code{"R_Eigen"} and
+  \code{"Higham08"}.
 }
 \value{
   The matrix exponential of \code{x}.

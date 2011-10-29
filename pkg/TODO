@@ -1,0 +1,5 @@
+#-*-org-*-
+
+* expm() should work for sparse matrices for more methods
+
+* expAtv(A, v, t)   should work for *vector* t

@@ -3,6 +3,7 @@ useDynLib(expm, .registration = TRUE)
 
 importFrom("Matrix", Schur, norm,
 	   solve,# <- for expm.Higham08(*, balancing=FALSE)
+           rowSums, colSums,# e.g. in expm.s.Pade.s
 	   Matrix)# <- only in	Schur(Matrix(.))
 
 ### Exports

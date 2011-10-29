@@ -1,4 +1,4 @@
-TEXI2DVI = texi2dvi --pdf
+TEXI2PDF = texi2dvi --pdf
 RM = rm -rf
 R_PROG = R
 
@@ -8,7 +8,7 @@ all: expm.pdf
 	${R_PROG} CMD Sweave $<
 
 %.pdf : %.tex %.bib
-	$(TEXI2DVI) $<
+	$(TEXI2PDF) $<
 
 clean:
 	$(RM) *-[0-9][0-9][0-9].pdf *.log *.blg *.out *.rel Rplots.ps

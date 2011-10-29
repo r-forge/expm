@@ -1,5 +1,5 @@
 #### Originally by  Roger B. Sidje (rbs@maths.uq.edu.au)
-####    EXPOKIT: Software Package for Computing Matrix Exponentials.
+####	EXPOKIT: Software Package for Computing Matrix Exponentials.
 ####   ACM - Transactions On Mathematical Software, 24(1):130-156, 1998
 
 ##' Performs exp(A t) %*% v  directly  w/o  evaluating exp(A)
@@ -18,15 +18,15 @@
 ##' @return a list with components
 ##' @author Ravi Varadhan, Johns Hopkins University; Martin Maechler (cosmetic)
 expAtv <- function(A, v, t=1, tol=1e-7, btol = 1e-7,
-                   m.max = 30, mxrej = 10,
-                   verbose = getOption("verbose"))
+		   m.max = 30, mxrej = 10,
+		   verbose = getOption("verbose"))
 {
     ## R translation:  Ravi Varadhan, Johns Hopkins University
     ##		   "cosmetic", apply to sparse A: Martin Maechler, ETH Zurich
     stopifnot(length(v) == (n <- nrow(A)), m.max >= 2)
     if(n <= 1) {
-        if(n == 1) return(list(eAtv = exp(A*t)*v, error = 0, nstep = 0L, n.reject = 0L))
-        stop("nrow(A) must be >= 1")
+	if(n == 1) return(list(eAtv = exp(A*t)*v, error = 0, nstep = 0L, n.reject = 0L))
+	stop("nrow(A) must be >= 1")
     }
     m <- min(n, m.max)
     ##-<FIXME> these are function arguments as well :
@@ -46,8 +46,8 @@ expAtv <- function(A, v, t=1, tol=1e-7, btol = 1e-7,
     beta <- sqrt(sum(v*v))# = norm(v) = |\ v ||
     fact <- (((m+1)/exp(1))^(m+1))*sqrt(2*pi*(m+1))
     myRound <- function(tt) {
-        s <- 10^(floor(log10(tt)) - 1)
-        ceiling(tt/s)*s
+	s <- 10^(floor(log10(tt)) - 1)
+	ceiling(tt/s)*s
     }
     t_new <- myRound( (1/nA)*(fact*tol/(4*beta*nA))^xm )
 
@@ -62,7 +62,7 @@ expAtv <- function(A, v, t=1, tol=1e-7, btol = 1e-7,
 				t_now, nstep, t_step))
 	V[,1] <- (1/beta)*w
 	for (j in 1:m) {
-	    p <- drop(A %*% V[,j])
+	    p <- as.vector(A %*% V[,j])
 	    for (i in 1:j) {
 		H[i,j] <- s <- sum(V[,i] *  p)
 		p <- p - s * V[,i]
@@ -84,10 +84,10 @@ expAtv <- function(A, v, t=1, tol=1e-7, btol = 1e-7,
 	}
 	i.rej <- 0L
 	while (i.rej <= mxrej) {
-	    mx <- mb + k1
-	    if(verbose) cat(sprintf("   inner while: k1=%d -> mx=%d\n",
+	    mx <- mb + k1; imx <- seq_len(mx) # = 1:mx
+	    if(verbose) cat(sprintf("	inner while: k1=%d -> mx=%d\n",
 				    k1, mx))
-	    F <- expm(sgn * t_step * H[1:mx,1:mx])
+	    F <- expm(sgn * t_step * H[imx,imx])
 	    if (k1 == 0) {
 		err_loc <- btol
 		break
@@ -117,8 +117,8 @@ expAtv <- function(A, v, t=1, tol=1e-7, btol = 1e-7,
 	    }
 	}## end{ while (i.rej < mx..) }
 	n.rej <- n.rej + i.rej
-	mx <- mb + max(0, k1-1)
-	w <- drop(V[, 1:mx] %*% (beta*F[1:mx,1]))
+	mx <- mb + max(0, k1-1); imx <- seq_len(mx) # = 1:mx
+	w <- as.vector(V[, imx] %*% (beta*F[imx,1]))
 	beta <- sqrt(sum(w*w))
 	t_now <- t_now + t_step
 	t_new <- myRound(gamma * t_step * (t_step*tol/err_loc)^xm)

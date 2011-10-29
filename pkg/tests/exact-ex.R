@@ -232,7 +232,7 @@ round(nDig, 2)
 
 set.seed(17)
 m <- rnilMat(10)
-as(m, "sparseMatrix")# for nicer printing
+(m. <- as(m,"sparseMatrix"))# for nicer printing - and more *below*
 E.m <- expm::expm(m, method="Pade")
 as(E.m, "sparseMatrix")
 
@@ -261,6 +261,9 @@ re.x <- sapply(expmL.wo.E, function(EXPM) relErr(Em.xct, EXPM(m)))
 ## with error message from "safe.Eigen"  -->  Eigen is NA here
 
 ## result depends quite a bit on platform
+which(is.na(re.x))
+(re.x <- re.x[!is.na(re.x)])
+
 
 ## Pentium-M 32-bit ubuntu gave
 ##      Ward     s.P.s    s.P.sO  sPs.H08.  sPs.H08b     s.T.s    s.T.sO    hybrid
@@ -279,11 +282,15 @@ re.x <- sapply(expmL.wo.E, function(EXPM) relErr(Em.xct, EXPM(m)))
 ##     Ward    s.P.s   s.P.sO sPs.H08. sPs.H08b    s.T.s   s.T.sO hybrid
 ## 5.13e-17 3.99e-17 3.99e-17 1.84e-15 1.84e-15 8.44e-17 8.44e-17 5.13e-17
 
-which(is.na(re.x))
-(re.x <- re.x[!is.na(re.x)])
-
 stopifnot(re.x[c("Ward", "s.T.s", "s.T.sO")] < 3e-16,
           re.x < 1e-13)# <- 32-bit needed 0.451e-14
+
+##--- Now look at the *sparse* methods:
+(meths <- eval(formals(expm)$method))
+ems <- sapply(meths, function(met)
+              tryCatch(expm::expm(m., method=met), error=identity))
+ok <- !sapply(ems, is, class="error")
+meths[ok] # only one -- "Higham08" -- currently !
 
 showProc.time()
 

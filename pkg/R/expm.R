@@ -40,11 +40,15 @@ expm.s.Pade.s <- function(x, order, n=nrow(x)) {
 }
 
 
+expm.methSparse <- c("Higham08", "R_Eigen", "R_Pade")
+## "FIXME" -- keep this list up-to-date - test by setting  R_EXPM_NO_DENSE_COERCION
+
 expm <- function(x, method = c("Higham08.b", "Higham08",
 		    "Ward77", "PadeRBS", "Pade", "Taylor", "PadeO", "TaylorO",
 		    "R_Eigen", "R_Pade", "R_Ward77", "hybrid_Eigen_Ward"),
 		 order = 8,
 		 trySym = TRUE, tol = .Machine$double.eps,
+		 do.sparseMsg = TRUE,
 		 preconditioning = c("2bal", "1bal", "buggy"))
 {
     ## some methods work for "matrix" or "Matrix" matrices:
@@ -52,6 +56,15 @@ expm <- function(x, method = c("Higham08.b", "Higham08",
 	      length(d <- dim(x)) == 2)
     if (d[1] != d[2]) stop("matrix not square")
     method <- match.arg(method)
+    checkSparse <- !nzchar(Sys.getenv("R_EXPM_NO_DENSE_COERCION"))
+    if(!is.numeric(x) && checkSparse) { # i.e., a "dMatrix"
+	if(!(method %in% expm.methSparse) && is(x, "sparseMatrix")) {
+	    if(do.sparseMsg)
+		message("coercing to dense matrix, as required by method ",
+			dQuote(method))
+	    x <- as(x, "denseMatrix")
+	}
+    }
     switch(method,
 	   "Higham08.b" = expm.Higham08(x, balancing = TRUE)
 	   ,

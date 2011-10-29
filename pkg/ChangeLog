@@ -1,3 +1,11 @@
+2011-10-28  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* src/matexp.f (matexpRBS): do not call STOP ..
+	* NAMESPACE: import rowSums from Matrix (because of its
+	sparseMatrix method).
+	* R/expm.R (expm): auto-coerce sparse matrices to dense, when
+	"needed".
+
 2011-10-27  Martin Maechler  <maechler@stat.math.ethz.ch>
 
 	* R/expm_At.R (expAtv): finally add the functionality for

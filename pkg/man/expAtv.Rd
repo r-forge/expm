@@ -44,8 +44,10 @@ source(system.file("demo", "exact-fn.R", package = "expm"))
 set.seed(1)
 (s5 <- Matrix(m5 <- rnilMat(5))); v <- c(1,6:9)
 (em5 <- expm(m5))
-r5 <- expAtv(m5, v)
-stopifnot(all.equal(em5 \%*\% v, r5$eAtv))
+r5  <- expAtv(m5, v)
+r5. <- expAtv(s5, v)
+stopifnot(all.equal(r5, r5., tol = 1e-14),
+          all.equal(c(em5 \%*\% v), r5$eAtv))
 
 v <- 10:1
 with(xct10, all.equal(expm(m), expm))
@@ -57,7 +59,7 @@ A <- bandSparse(n,n, -1:1, diag = list(-(2:n), -5*(1:n), 1:(n-1)))
 v <- 100*(500:1)
 t.v <- system.time(rr  <- expAtv(A, v=v))
 ## this is an order of magnitude slower :
-t.A <- system.time(w. <- (eA <- expm(A)) \%*\% v)
+t.A <- system.time(w. <- (eA <- expm(A, "Higham08")) \%*\% v)
 stopifnot(all.equal(rr$eAtv, as.numeric(w.)))
 mean((t.A / t.v)[c(1,3)]) ## 23.57  {nb-mm3}
 }

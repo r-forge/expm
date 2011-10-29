@@ -10,4 +10,5 @@ Maintainer: Martin Maechler <maechler@stat.math.ethz.ch>
 Description: Computation of the matrix exponential and related quantities.
 Depends: Matrix
 Suggests: RColorBrewer, sfsmisc
+BuildResaveData: no
 License: GPL (>= 2)
