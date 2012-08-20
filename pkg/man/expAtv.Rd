@@ -41,6 +41,7 @@ expAtv(A, v, t = 1,
 }
 \examples{
 source(system.file("demo", "exact-fn.R", package = "expm"))
+##-> rnilMat() ; xct10
 set.seed(1)
 (s5 <- Matrix(m5 <- rnilMat(5))); v <- c(1,6:9)
 (em5 <- expm(m5))
@@ -54,14 +55,18 @@ with(xct10, all.equal(expm(m), expm))
 all.equal(c(xct10$expm \%*\% v),
           expAtv(xct10$m, v)$eAtv)
 
+(doExtras <- interactive() || nzchar(Sys.getenv("R_expm_check_extra")) ||
+ identical("true", unname(Sys.getenv("R_MM_PKG_CHECKING"))))
+
 n <- 500
 A <- bandSparse(n,n, -1:1, diag = list(-(2:n), -5*(1:n), 1:(n-1)))
 v <- 100*(500:1)
 t.v <- system.time(rr  <- expAtv(A, v=v))
-## this is an order of magnitude slower :
-t.A <- system.time(w. <- (eA <- expm(A, "Higham08")) \%*\% v)
-stopifnot(all.equal(rr$eAtv, as.numeric(w.)))
-mean((t.A / t.v)[c(1,3)]) ## 23.57  {nb-mm3}
+if(doExtras) { ## this is an order of magnitude slower :
+ t.A <- system.time(w. <- (eA <- expm(A, "Higham08")) \%*\% v)
+ stopifnot(all.equal(rr$eAtv, as.numeric(w.)))
+ print( mean((t.A / t.v)[c(1,3)]) )## 23.57  {nb-mm3}
+}% if(doExtras)
 }
 \keyword{algebra}
 \keyword{math}

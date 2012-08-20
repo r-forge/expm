@@ -2,7 +2,7 @@ Package: expm
 Type: Package
 Title: Matrix exponential
 Version: 0.99-0
-Date: 2011-10-28
+Date: 2011-11-07
 Author: Vincent Goulet, Christophe Dutang, Martin Maechler,
 	David Firth, Marina Shapira, Michael Stadelmann,
 	expm-developers@lists.R-forge.R-project.org
@@ -12,3 +12,4 @@ Depends: Matrix
 Suggests: RColorBrewer, sfsmisc
 BuildResaveData: no
 License: GPL (>= 2)
+URL: http://R-Forge.R-project.org/projects/expm/

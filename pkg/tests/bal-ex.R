@@ -1,7 +1,7 @@
 library(expm)
 source(system.file("test-tools.R", package= "expm"))## -> assertError()...
 
-demo(dgebalTst) #-> the function definition and the first few examples
+demo(balanceTst) #-> the function definition and the first few examples
 
 dm4. <- dgebal(m4)
 storage.mode(m4) <- "integer"

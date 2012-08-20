@@ -37,7 +37,7 @@ if(!inherits(m1.2, "try-error")) {
     stopifnot(all.equal(m1.t, m1.2, check.attrib=FALSE))
     ## but it's less accurate:
     print(all.equal(m1.t, m1.2, check.attrib=FALSE, tol= 1e-12))
-    ##-> rel.diff = 6.44e-10
+    ##-> rel.diff = 6.44e-10 / 6.2023e-10
 }
 
 ##
