@@ -290,7 +290,7 @@ stopifnot(re.x[c("Ward", "s.T.s", "s.T.sO")] < 3e-16,
 ems <- sapply(meths, function(met)
               tryCatch(expm::expm(m., method=met), error=identity))
 ok <- !sapply(ems, is, class="error")
-meths[ok] # only one -- "Higham08" -- currently !
+meths[ok] # only two, for now
 
 showProc.time()
 

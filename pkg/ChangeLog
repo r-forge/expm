@@ -1,3 +1,8 @@
+2011-11-08  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* man/balance.Rd: use new name balance() instead of dgebal()
+	* R/balance.R:
+
 2011-10-28  Martin Maechler  <maechler@stat.math.ethz.ch>
 
 	* src/matexp.f (matexpRBS): do not call STOP ..

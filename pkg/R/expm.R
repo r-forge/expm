@@ -88,7 +88,7 @@ expm <- function(x, method = c("Higham08.b", "Higham08",
 
 	       ## MM: improved from mexp2() with 'trySym' and isSymmetric()
 	       isSym <- if(trySym) isSymmetric.matrix(x) else FALSE
-	       z <- eigen(x, sym = isSym)
+	       z <- eigen(x, symmetric = isSym)
 	       V <- z$vectors
 	       Vi <- if(isSym) t(V) else solve(V)
 	       Re(V %*% (    exp(z$values)   *	Vi)) ## ==
@@ -123,12 +123,12 @@ expm <- function(x, method = c("Higham08.b", "Higham08",
 		   diag(x) <- d.x - trShift
 	       }
 
-	       ## Preconditioning  Step 2: balancing with dgebal.
+	       ## Preconditioning  Step 2: balancing with balance.
 	       ##		   ------
 	       ## For now, do like the octave implementation
 	       ## TODO later:  use "B" (faster; better condition of result)
-	       baP <- dgebal(x,	    "P")
-	       baS <- dgebal(baP$z, "S")
+	       baP <- balance(x,     "P")
+	       baS <- balance(baP$z, "S")
 
 	       x <- expm.s.Pade.s(baS$z, order)
 	       ##   -------------  scaling + Pade + squaring ------

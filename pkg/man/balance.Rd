@@ -1,4 +1,5 @@
-\name{dgebal}
+\name{balance}
+\alias{balance}
 \alias{dgebal}
 \title{Balance a Square Matrix via LAPACK's DGEBAL}
 \description{

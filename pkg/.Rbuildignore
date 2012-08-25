@@ -3,6 +3,7 @@ foo
 .*\.f\+
 .*_fail
 inst/doc/auto
+inst/doc/Makefile
 .*\.aux
 .*\.log
 .*\.blg

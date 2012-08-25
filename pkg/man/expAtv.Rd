@@ -2,33 +2,36 @@
 \alias{expAtv}
 \title{Compute Matrix Exponential  exp(A t) * v  directly}
 \description{Performs exp(A t) \%*\% v  directly  w/o  evaluating exp(A)
-  Originally by  Roger B. Sidje
-  EXPOKIT: Software Package for Computing Matrix Exponentials.
-  ACM - Transactions On Mathematical Software, 24(1):130-156, 1998
+%%  Originally by
+
 }
 \usage{
 expAtv(A, v, t = 1,
+       method = "Sidje98",
        tol = 1e-07, btol = 1e-07, m.max = 30, mxrej = 10,
        verbose = getOption("verbose"))
 }
 \arguments{
   \item{A}{n x n matrix}
   \item{v}{n - vector}
-  \item{t}{number (scalar) ___ FIXME allow vector ? ___}
-  \item{tol}{}
-  \item{btol}{}
+  \item{t}{number (scalar);}% ___ FIXME allow vector ? ___}
+  \item{method}{a string indicating the method to be used; there's only
+    one currently.}
+  \item{tol, btol}{tolerances; these are tuning constants of the
+    "Sidje1998" method which the user should typically \emph{not} change.}
   \item{m.max, mxrej}{integer constants you should only change if you know what you're doing}
-%  \item{mxrej}{}
   \item{verbose}{flag indicating if the algorithm should be verbose..}
 }
 \value{a list with components
-  \item{eAtv}{}
+  \item{eAtv}{.....fixme...}
 }
-\details{
+% \details{
 
-}
+% }
 \references{
-............
+  Roger B. Sidje (1998)
+  EXPOKIT: Software Package for Computing Matrix Exponentials.
+  \emph{ACM - Transactions On Mathematical Software} \bold{24}(1), 130--156.
 }
 \author{Ravi Varadhan, Johns Hopkins University;
   Martin Maechler (cosmetic, generalization to sparse matrices).

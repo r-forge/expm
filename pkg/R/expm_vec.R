@@ -17,8 +17,11 @@
 ##' @param verbose flag indicating if the algorithm should be verbose..
 ##' @return a list with components
 ##' @author Ravi Varadhan, Johns Hopkins University; Martin Maechler (cosmetic)
-expAtv <- function(A, v, t=1, tol=1e-7, btol = 1e-7,
-		   m.max = 30, mxrej = 10,
+expAtv <- function(A, v, t=1,
+                   method = "Sidje98",
+                   ## currently only one method, with these arguments:
+                   ## FIXME argMeth=list( ... )
+                   tol=1e-7, btol = 1e-7, m.max = 30, mxrej = 10,
 		   verbose = getOption("verbose"))
 {
     ## R translation:  Ravi Varadhan, Johns Hopkins University
@@ -28,6 +31,7 @@ expAtv <- function(A, v, t=1, tol=1e-7, btol = 1e-7,
 	if(n == 1) return(list(eAtv = exp(A*t)*v, error = 0, nstep = 0L, n.reject = 0L))
 	stop("nrow(A) must be >= 1")
     }
+    method <- match.arg(method)
     m <- min(n, m.max)# >= 2
     ##-<FIXME> these are function arguments as well :
     gamma <- 0.9

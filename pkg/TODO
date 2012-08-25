@@ -10,3 +10,6 @@
   *but* add the functionality (available in Matlab) to also return the
   transforming diagonal matrix D --> file:R/balance.R
 
+
+* Rmpfr version possible (s.Pade.s), as soon as solve() for Rmpfr
+

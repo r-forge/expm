@@ -13,7 +13,7 @@
 expm(x, method = c("Higham08.b", "Higham08",
                    "Ward77", "PadeRBS", "Pade", "Taylor", "PadeO", "TaylorO",
                    "R_Eigen", "R_Pade", "R_Ward77", "hybrid_Eigen_Ward"),
-     order = 8, trySym = TRUE, tol = .Machine$double.eps,
+     order = 8, trySym = TRUE, tol = .Machine$double.eps, do.sparseMsg = TRUE,
      preconditioning = c("2bal", "1bal", "buggy"))
 }
 \arguments{
@@ -51,6 +51,8 @@ expm(x, method = c("Higham08.b", "Higham08",
     symmetric matrices.}
   \item{tol}{a given tolerance used to check if \code{x} is
     computationally singular when \code{method = "hybrid_Eigen_Ward"}.}
+  \item{do.sparseMsg}{logical allowing a message about sparse to dense
+    coercion; setting it \code{FALSE} suppresses that message.}
   \item{preconditioning}{a string specifying which implementation of
     Ward(1977) should be used when \code{method = "Ward77"}.
     %%% FIXME explain more
@@ -67,7 +69,7 @@ expm(x, method = c("Higham08.b", "Higham08",
 
   Currently, only algorithms which are \emph{\dQuote{\R-code only}} accept \emph{sparse}
   matrices (see the
-  \code[Matrix:sparseMatrix-class]{\link{sparseMatrix}} class in package
+  \code{\link[Matrix:sparseMatrix-class]{sparseMatrix}} class in package
   \pkg{Matrix}), i.e., currently only \code{"R_Eigen"} and
   \code{"Higham08"}.
 }
