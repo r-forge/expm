@@ -4,8 +4,11 @@ library(expm)
 
 options(digits = 4, width = 90, keep.source = FALSE)
 
-source(system.file("test-tools.R", package = "expm"))## -> assertError(), rMat()
-source(system.file("demo", "exact-fn.R", package = "expm"))
+mSource <- function(file, ...)
+    source(system.file(file, ..., package = "expm", mustWork=TRUE))
+mSource("test-tools.R")## -> assertError(), rMat(), ..
+mSource("demo", "exact-fn.R")
+doExtras
 
 re.nilA3 <- function(xyz, EXPMlist)
 {
@@ -98,8 +101,11 @@ expmL.wo.E <- expmList[names(expmList) != "R_Eigen"]
 
 
 set.seed(12)
-re.facMat(20, expmList)
-fRE <- replicate(100, re.facMat(20, expmList))
+fRE <- replicate(if(doExtras) 100 else 20,
+                 re.facMat(20, expmList))
+cat("Number of correct decimal digits for facMat(20, rnorm):\n")
+summary(-log10(t(fRE["relErr",,])))
+
 
 ## Now look at that:
 boxplot(t(fRE["relErr",,]), log="y", notch=TRUE,
@@ -107,8 +113,9 @@ boxplot(t(fRE["relErr",,]), log="y", notch=TRUE,
 
 showProc.time()
 
+if(doExtras) {
 str(rf100 <- replicate(20, re.facMat(100, expmList)))
-1000*t(apply(rf100["c.time",,], 1, summary))
+print(1000*t(apply(rf100["c.time",,], 1, summary)))
 ## lynne {Linux 2.6.34.7-56.fc13.x86_64 --- AMD Phenom II X4 925}:
 ##          Min. 1st Qu. Median  Mean 3rd Qu. Max.
 ## Ward       23      24   24.5  24.4    25.0   25
@@ -124,13 +131,13 @@ str(rf100 <- replicate(20, re.facMat(100, expmList)))
 
 ##--> take out the real slow ones for the subsequent tests:
 `%w/o%` <- function(x, y) x[!x %in% y] #--  x without y
-(nms.swift <- names(expmList) %w/o%
+print(nms.swift <- names(expmList) %w/o%
  c("s.P.s", "s.P.sO", "s.T.s", "s.T.sO"))
 expmL.swift <- expmList[nms.swift]
 
 ## 12 replicates is too small .. but then it's too slow otherwise:
 rf400 <- replicate(12, re.facMat(400, expmL.swift))
-1000*t(apply(rf400["c.time",,], 1, summary))
+print(1000*t(apply(rf400["c.time",,], 1, summary)))
 ## lynne:
 ##          Min. 1st Qu. Median Mean 3rd Qu. Max.
 ## Ward     1740    1790   1830 1820    1860 1900
@@ -141,6 +148,8 @@ rf400 <- replicate(12, re.facMat(400, expmL.swift))
 ## hybrid   2740    2800   2840 2840    2890 2910
 
 showProc.time()
+
+}## if(doExtras)  only
 
 ## Now  try an example with badly conditioned "random" M matrix...
 ## ...

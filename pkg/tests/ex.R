@@ -1,6 +1,6 @@
 library(expm)
 
-source(system.file("test-tools.R", package= "expm"))## -> assertError()...
+source(system.file("test-tools.R", package= "expm"), keep.source=FALSE)
 
 ## Note that these results are achieved with the default
 ## settings order=8, method="Pade" -- accuracy could
@@ -27,6 +27,14 @@ stopifnot(
     all.equal(eV1 %*% L1, T1 %*% eV1, tol=1e-15)
     )
 ## However,  eV1 is not orthogonal, but of rank 2
+
+if(FALSE) { ## require("Rmpfr")) { ## 200 bit precision version of that
+  S2 <- sqrt(mpfr(2,200))
+  E1 <- c(S2,S2,S2,  -2,1,1,  2,-1,-1) / sqrt(mpfr(6,200))
+  dim(E1) <- c(3,3)
+  print(E1 %*% L1)
+  print(E1)
+}
 
 ## "true" result
 m1.t <- matrix(c(147.866622446369, 127.781085523181, 127.781085523182,

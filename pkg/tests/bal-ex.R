@@ -1,5 +1,5 @@
 library(expm)
-source(system.file("test-tools.R", package= "expm"))## -> assertError()...
+source(system.file("test-tools.R", package= "expm"), keep.source=FALSE)## -> assertError()...
 
 demo(balanceTst) #-> the function definition and the first few examples
 
