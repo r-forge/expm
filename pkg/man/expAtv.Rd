@@ -3,11 +3,11 @@
 \title{Compute Matrix Exponential  exp(A t) * v  directly}
 \description{Performs exp(A t) \%*\% v  directly  w/o  evaluating exp(A)
 %%  Originally by
-
 }
 \usage{
 expAtv(A, v, t = 1,
        method = "Sidje98",
+       rescaleBelow = 1e-6,
        tol = 1e-07, btol = 1e-07, m.max = 30, mxrej = 10,
        verbose = getOption("verbose"))
 }
@@ -17,6 +17,11 @@ expAtv(A, v, t = 1,
   \item{t}{number (scalar);}% ___ FIXME allow vector ? ___}
   \item{method}{a string indicating the method to be used; there's only
     one currently.}
+  \item{rescaleBelow}{if \code{\link{norm}(A,"I")} is smaller than \code{rescaleBelow},
+    rescale \code{A} to norm 1 and \code{t} such that \eqn{A t} remains
+    unchanged.  This step is in addition to Sidje's original algorithm
+    and easily seen to be necessary even in simple cases (e.g., \eqn{n = 3}).}
+
   \item{tol, btol}{tolerances; these are tuning constants of the
     "Sidje1998" method which the user should typically \emph{not} change.}
   \item{m.max, mxrej}{integer constants you should only change if you know what you're doing}
@@ -34,15 +39,16 @@ expAtv(A, v, t = 1,
   \emph{ACM - Transactions On Mathematical Software} \bold{24}(1), 130--156.
 }
 \author{Ravi Varadhan, Johns Hopkins University;
-  Martin Maechler (cosmetic, generalization to sparse matrices).
+  Martin Maechler (cosmetic, generalization to sparse matrices;
+  rescaling (see \code{rescaleBelow}).
 }
 % \note{
 % }
 
 \seealso{
-  \code{\link{expm}},....
+  \code{\link{expm}}%,....
 }
-\examples{
+\examples{%% tests are at end of ../tests/ex2.R
 source(system.file("demo", "exact-fn.R", package = "expm"))
 ##-> rnilMat() ; xct10
 set.seed(1)
@@ -57,19 +63,6 @@ v <- 10:1
 with(xct10, all.equal(expm(m), expm))
 all.equal(c(xct10$expm \%*\% v),
           expAtv(xct10$m, v)$eAtv)
-
-(doExtras <- interactive() || nzchar(Sys.getenv("R_expm_check_extra")) ||
- identical("true", unname(Sys.getenv("R_MM_PKG_CHECKING"))))
-
-n <- 500
-A <- bandSparse(n,n, -1:1, diag = list(-(2:n), -5*(1:n), 1:(n-1)))
-v <- 100*(500:1)
-t.v <- system.time(rr  <- expAtv(A, v=v))
-if(doExtras) { ## this is an order of magnitude slower :
- t.A <- system.time(w. <- (eA <- expm(A, "Higham08")) \%*\% v)
- stopifnot(all.equal(rr$eAtv, as.numeric(w.)))
- print( mean((t.A / t.v)[c(1,3)]) )## 23.57  {nb-mm3}
-}% if(doExtras)
 }
 \keyword{algebra}
 \keyword{math}

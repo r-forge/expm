@@ -1,8 +1,10 @@
-#### Example matrices from the Matlab demos
+
+#### Example matrices from the Matlab demos //  expAtv() examples
 
 library(expm)
 
-source(system.file("test-tools.R", package= "expm"), keep.source=FALSE)## -> assertError()...
+source(system.file("test-tools.R", package= "expm"), keep.source=FALSE)
+## -> assertError()...
 
 ## --- 1 ---
 ## Here, all three {eigen; Taylor; Pade(Scaling & Squaring)} should do well
@@ -75,3 +77,68 @@ stopifnot(all.equal(V %*% IV, diag(2)))
 em.true <- V %*% (exp(d) * IV)
 stopifnot(all.equal(em.true, expm::expm(m)),
           all.equal(em.true, expm::expm(m,"Pade"), check.attrib=FALSE))
+
+###----------- expAtv() ----------------
+
+
+n <- 500
+A <- bandSparse(n,n, -1:1, diag = list(-(2:n), -5*(1:n), 1:(n-1)))
+v <- 100*(n:1)
+t.v <- showSys.time(rr <- expAtv(A, v=v))
+if(doExtras) { ## this is an order of magnitude slower :
+    t.A <- system.time(w. <- (eA <- expm(A, "Higham08")) %*% v)
+    stopifnot(all.equal(rr$eAtv, as.numeric(w.)))
+    print( mean((t.A / t.v)[c(1,3)]) )## 23.57 {nb-mm3}; 21.0 {lynne}
+}
+
+
+## Bug report on R-forge  by Peter Ralph (petrelharp)
+## If the entries of A are less than about 1e-8, then expAtv(A,v) fails
+## with Error: length(d <- dim(x)) == 2 is not TRUE
+## ... an error that comes from expm, because it has got a 1x1 matrix. (I can't tell why this causes an error; outside of expAtv this doesn't cause an error...)
+
+## To reproduce:
+
+##' @title Compute several "scaled" versions of  e^{At} v :
+##' @param A n x n matrix
+##' @param v n  vector
+##' @param s vector of scales
+##' @return list of  expAtv() results
+##' @author Martin Maechler, based on Peter Ralph's idea:
+scl.e.Atv <- function(A, v, s) {
+    c(list(I = expAtv(A, v)),
+      unlist(lapply(s, function(l) {
+          ## cat(sprintf(" %7g\n", l))
+          list(lA = expAtv(l*A, v), lAI = expAtv(l*A, v, t=1/l))
+      }), recursive = FALSE))
+}
+
+A <- matrix( 1:9, nrow=3 )/8
+v <- rep(1,3)
+sc <- 4^c(-500, -200, -100, -5*(15:6), -2*(14:9), -17:15)
+## 10^9 is too large => expm() "overflow" NaN
+r <- scl.e.Atv(A,v, s = sc) # at least without error
+(eAv <- t(sapply(r, `[[`, "eAtv")))
+## Ensure that indeed	expAtv(A, v)  =.=  expAtv(e*A, v, 1/e)  for e > 0
+## -----                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+eAv[1,]
+assert.EQ.mat(unname( eAv[rep(1, length(sc)), ]),
+	      unname( eAv[1+2*seq_along(sc), ] ), tol=1e-14)
+					# 64-bit lynne: 2.7e-16 !!
+
+sc.Atv <- function(A,v, s) {
+    vapply(s, function(l) expAtv(l*A, v, t=1/l)$eAtv, v)
+}
+
+chk.sc.Atv <- function(A,v, s, tol=1e-15) {
+    r <- vapply(s, function(l) expAtv(l*A, v, t=1/l)$eAtv, v)
+    I <- expAtv(A,v)$eAtv
+    if (!isTRUE(eq <- all.equal(as.vector(r), rep(I, length(s)), tol = tol)))
+	stop("not all.equal() |->  ", eq)
+}
+
+chk.sc.Atv(A,v, sc, tol=1e-14)
+## for information: see the precision:
+tryCatch( chk.sc.Atv(A,v, sc, tol= 0), error=identity)$message
+
+

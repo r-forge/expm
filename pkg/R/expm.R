@@ -52,8 +52,8 @@ expm <- function(x, method = c("Higham08.b", "Higham08",
 		 preconditioning = c("2bal", "1bal", "buggy"))
 {
     ## some methods work for "matrix" or "Matrix" matrices:
-    stopifnot(is.numeric(x) || is(x, "dMatrix"),
-	      length(d <- dim(x)) == 2)
+    stopifnot(is.numeric(x) || is(x, "dMatrix"))
+    if(length(d <- dim(x)) != 2) stop("argument is not a matrix")
     if (d[1] != d[2]) stop("matrix not square")
     method <- match.arg(method)
     checkSparse <- !nzchar(Sys.getenv("R_EXPM_NO_DENSE_COERCION"))
