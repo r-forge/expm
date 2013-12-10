@@ -142,3 +142,23 @@ chk.sc.Atv(A,v, sc, tol=1e-14)
 tryCatch( chk.sc.Atv(A,v, sc, tol= 0), error=identity)$message
 
 
+A0 <- matrix( c(-3,1,2,1,-2,1,0,1,-1), nrow=3, byrow=TRUE)
+A1 <- A0 + 1e-16*rnorm(9)
+## These two also failed originally
+chk.sc.Atv(A0, v=10^(1:3), s=sc, tol=1e-14)
+chk.sc.Atv(A1, v=rep(1,3), s=sc, tol=1e-14)
+
+set.seed(17)
+S <- rSpMatrix(29, density = 1/64)
+v <- round(100*rnorm(nrow(S)))
+if(FALSE) ## Error in  balance(baP$z, "S") :
+    ## BLAS/LAPACK routine 'DGEBAL' gave error code -3
+    chk.sc.Atv(S/64, v, s=sc, tol=1e-14)
+if(FALSE) {
+    ## after
+    debug(chk.sc.Atv)
+    ## this is revealing:
+    image(as(relErrV(I, r),"sparseMatrix"))
+    ## ==>
+    sc[28:29] # are giving the largest differences
+}
