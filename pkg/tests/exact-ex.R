@@ -226,7 +226,7 @@ me$expA * exp(1) ## the correct value ; numerically identical to simple matrix:
 stopifnot(all.equal(me$expA * exp(1),
 		    rbind(c(  1,  1),
 			  c(ep^2, 1)),
-		    tol = 1e-14))
+		    tolerance = 1e-14))
 ## The relative error (matrices):
 lapply(expmList, function(EXPM) 1 - EXPM(me$A)/me$expA)
 
@@ -265,7 +265,7 @@ EmN <- matrix(c(dN, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 Em.xct <- EmN / dN
 
 stopifnot(all.equal(E.m, Em.xct,
-                    check.attributes = FALSE, tol= 1e-13))
+                    check.attributes = FALSE, tolerance= 1e-13))
 re.x <- sapply(expmL.wo.E, function(EXPM) relErr(Em.xct, EXPM(m)))
 ## with error message from "safe.Eigen"  -->  Eigen is NA here
 
