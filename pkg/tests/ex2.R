@@ -80,6 +80,9 @@ stopifnot(all.equal(em.true, expm::expm(m)),
 
 ###----------- expAtv() ----------------
 
+## Bug report, 8 Sep 2014  (R-forge Bugs item #5919), by: Peter Ralph
+stopifnot(expAtv(A3, v=c(0,0))$eAtv == 0)
+
 
 n <- 500
 A <- bandSparse(n,n, -1:1, diag = list(-(2:n), -5*(1:n), 1:(n-1)))
