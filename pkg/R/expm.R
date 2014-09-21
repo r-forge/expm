@@ -45,6 +45,7 @@ expm.methSparse <- c("Higham08", "R_Eigen", "R_Pade")
 if(getRversion() < "3.1.0") dontCheck <- identity
 
 expm <- function(x, method = c("Higham08.b", "Higham08",
+                    "AlMohy-Hi09",
 		    "Ward77", "PadeRBS", "Pade", "Taylor", "PadeO", "TaylorO",
 		    "R_Eigen", "R_Pade", "R_Ward77", "hybrid_Eigen_Ward"),
 		 order = 8,
@@ -67,10 +68,12 @@ expm <- function(x, method = c("Higham08.b", "Higham08",
 	}
     }
     switch(method,
+           "AlMohy-Hi09" = expm.AlMoHi09(x, p = order)
+          ,
 	   "Higham08.b" = expm.Higham08(x, balancing = TRUE)
-	   ,
+	  ,
 	   "Higham08"	= expm.Higham08(x, balancing = FALSE)
-	   ,
+          ,
 	   "Ward77" = {
 	       ## AUTHORS: Christophe Dutang, Vincent Goulet at act ulaval ca
 	       ##	 built on "Matrix" package, built on 'octave' code
@@ -100,7 +103,7 @@ expm <- function(x, method = c("Higham08.b", "Higham08",
 	       ## matrix exponential using eigenvalues / spectral decomposition and
 	       ## Ward(1977) algorithm if x is numerically non diagonalisable
                stopifnot(is.matrix(x))
-	       .Call("do_expm_eigen", x, tol)
+	       .Call(do_expm_eigen, x, tol)
 	   },
 	   "R_Pade"= { ## use scaling + Pade + squaring with R code:
 
@@ -187,8 +190,8 @@ expm <- function(x, method = c("Higham08.b", "Higham08",
 	       ntaylor <- npade <- 0L
 	       if (substr(method,1,4) == "Pade")
 		   npade <- order else ntaylor <- order
-	       res <- .Fortran(dontCheck(if(identical(grep("O$", method), 1L))
-					 matrexpO else matrexp),
+	       rr <- if(identical(grep("O$", method), 1L)) matrexpO else matrexp
+	       res <- .Fortran(dontCheck(rr),
 			       X = x,
 			       size = d[1],
 			       ntaylor,
@@ -196,6 +199,5 @@ expm <- function(x, method = c("Higham08.b", "Higham08",
 			       accuracy = double(1))[c("X", "accuracy")]
 	       structure(res$X, accuracy = res$accuracy)
 	   })## end{switch}
-
 }
 

@@ -24,6 +24,7 @@ lL2 <- cbind(0:1, 0)
 assertError(logm(L2, method="Eigen"))
 assertError(logm(L3, method="Eigen"))
 
+logm.Higham08 <- expm:::logm.Higham08
 l.L2 <- logm.Higham08(L2)
 l.L3 <- logm.Higham08(L3)
 

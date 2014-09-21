@@ -1,6 +1,5 @@
 \name{logm}
 \alias{logm}
-\alias{logm.Higham08}
 \title{Matrix Logarithm}
 \description{
   This function computes the (principal) matrix logarithm of a square matrix.
@@ -13,9 +12,6 @@
 logm(x, method = c("Higham08", "Eigen"),
 %      order = 8, trySym = TRUE,
      tol = .Machine$double.eps)
-
-%% FIXME? drop this eventually:
-logm.Higham08(x)
 }
 \arguments{
   \item{x}{a square matrix.}
