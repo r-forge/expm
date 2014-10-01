@@ -71,6 +71,13 @@ expm(logm(m))
 D0 <- diag(x=c(1, 0.))
 (L. <- logm(D0))
 stopifnot( all.equal(D0, expm(L.)) )
+
+## A matrix for which clearly no logm(.) exists:
+(m <- cbind(1:2, 1))
+(l.m <- logm(m)) ## all NA
+stopifnot(is.na(l.m))
+## The "Eigen" method  ``works''  but wrongly :
+expm(logm(m, "Eigen"))
 }
 \keyword{algebra}
 \keyword{math}

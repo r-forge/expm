@@ -81,6 +81,11 @@ logm.Higham08 <- function(x) {
     ## NB: The following could loop forever, e.g., for  logm(Diagonal(x=1:0))
     repeat{
         t <- norm(Tr - I, "1") # norm(x, .) : currently x is coerced to dgeMatrix
+	if(is.na(t)) {
+	    warning("NA/NaN from || Tr - I ||  after ",
+		    k, " steps.  --> No valid matrix logarithm")
+	    return(array(t, dim=dim(Tr)))
+	}
         if (t < thMax) {
             ## FIXME: use findInterval()
             j2 <- which.max( t <= theta)
@@ -178,7 +183,13 @@ rootS <- function(UT) {
     for (j in seq_len(n-k)) {
         ij <- R.index[[j]]
 	if (length(ij) == 1) {
-	    ## FIXME(?) : in sqrtm(), we take *complex* sqrt() if needed :
+	    ## Sij <- S[ij,ij]
+	    ## if(Sij < 0)
+	    ##	   ## FIXME(?) : in sqrtm(), we take *complex* sqrt() if needed :
+	    ##	   ## -----  but afterwards  norm(Tr - I, "1") fails with complex
+	    ##	   ## Sij <- complex(real = Sij, imaginary = 0)
+	    ##	   stop("negative diagonal entry -- matrix square does not exist")
+	    ## X[ij,ij] <- sqrt(Sij)
 	    X[ij,ij] <- sqrt(S[ij,ij])
 	}
         else {
@@ -226,6 +237,7 @@ rootS <- function(UT) {
 		X[ii,ij] <- solve(t(X[ii,ii]*I + X[ij,ij]),
 				  as.vector(S[ii,ij] - sumU))
 	    }
+
 	    ## Calculation for	2x1 Blocks
 	    else if (length(ij) == 1 & length(ii) == 2 ) {
 		if (j-i > 1) for (l in(i+1):(j-1)) {
