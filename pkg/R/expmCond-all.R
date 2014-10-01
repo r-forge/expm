@@ -18,7 +18,7 @@ expmCond <- function(A, method = c("1.est", "F.est", "exact"),
     ##              $ expm:  e^A  Matrixexponential; nxn Matrix
     d <- dim(A)
     if(length(d) != 2 || d[1] != d[2] || d[1] <= 1)
-        stop("'A' must be a square matrix and n > 1")
+        stop("'A' must be a square matrix of dimension at least 2")
     n <- d[1]
     method <- match.arg(method)
     give.exact <- match.arg(give.exact)
@@ -55,7 +55,7 @@ expmCond <- function(A, method = c("1.est", "F.est", "exact"),
     ##              $ expm:  e^A  Matrixexponential; nxn Matrix
     d <- dim(A)
     if(length(d) != 2 || d[1] != d[2] || d[1] <= 1)
-        stop("'A' must be a square matrix and n > 1")
+	stop("'A' must be a square matrix of dimension at least 2")
     n <- d[1]
     ##---------STEP 1: Calculate Kroneckermatrix of L(A)------------------------
     K  <- matrix(0, n^2, n^2)
@@ -113,8 +113,8 @@ expmCond <- function(A, method = c("1.est", "F.est", "exact"),
 
     ## Check if A is square
     d <- dim(A)
-    if(length(d) != 2 || d[1] != d[2] || d[1]<=1)
-        stop("'A' must be a square matrix and n > 1")
+    if(length(d) != 2 || d[1] != d[2] || d[1] <= 1)
+	stop("'A' must be a square matrix of dimension at least 2")
     n <- d[1]
 
     tA <- t(A)
@@ -182,8 +182,8 @@ expmCond <- function(A, method = c("1.est", "F.est", "exact"),
 
     ## Check if A is square
     d <- dim(A)
-    if(length(d) != 2 || d[1] != d[2] || d[1]<=1)
-        stop("'A' must be a square matrix and n>1")
+    if(length(d) != 2 || d[1] != d[2] || d[1] <= 1)
+	stop("'A' must be a square matrix of dimension at least 2")
     n <- d[1]
 
     ##-------STEP 1 ESTIMATE 2-NORM OF KRONECKERMATRIX-------------------------------
