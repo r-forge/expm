@@ -19,7 +19,6 @@ expmCond <- function(A, method = c("1.est", "F.est", "exact"),
     d <- dim(A)
     if(length(d) != 2 || d[1] != d[2] || d[1] <= 1)
         stop("'A' must be a square matrix of dimension at least 2")
-    n <- d[1]
     method <- match.arg(method)
     give.exact <- match.arg(give.exact)
     switch(method,
@@ -59,8 +58,6 @@ expmCond <- function(A, method = c("1.est", "F.est", "exact"),
     n <- d[1]
     ##---------STEP 1: Calculate Kroneckermatrix of L(A)------------------------
     K  <- matrix(0, n^2, n^2)
-    v  <- numeric(n^2)
-
     E0 <- matrix(0, n,n)
     E.unit <- function(i,j) {
         ## Compute E_ij in R^{n x n} , the ij-th unit Matrix
@@ -313,12 +310,11 @@ expmFrechet <- function(A,E, method = c("SPS","blockEnlarge"), expm = TRUE)
                    c(17643225600,8821612800,2075673600,302702400,30270240,
                      2162160,110880,3960,90,1)) [l , ] # only need l-th row
 
-        j  <- l*2+1
         P  <- I
         U  <- C[2]*I
         V  <- C[1]*I
-        A2 <- A%*%A
-        M2 <- A%*%E+E%*%A
+        A2 <- A %*% A
+        M2 <- A %*% E + E %*% A
         M  <- M2
         LU <- C[4]*M
         LV <- C[3]*M
@@ -326,12 +322,12 @@ expmFrechet <- function(A,E, method = c("SPS","blockEnlarge"), expm = TRUE)
         oC <- 2
         for (k in seq_len(l-1)) { ## oC == 2k
             ## PA e^A
-            P  <- P%*%A2
+            P  <- P %*% A2
             U  <- U+C[oC+ 2]*P
             V  <- V+C[oC+ 1]*P
 
             ## PA L(A,E)
-            M  <- A2%*%M + M2%*%P
+            M  <- A2 %*% M + M2 %*% P
             LU <- LU + C[oC+ 4]*M
             LV <- LV + C[oC+ 3]*M
             oC <- oC + 2

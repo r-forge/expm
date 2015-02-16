@@ -1,15 +1,16 @@
 Package: expm
 Type: Package
-Title: Matrix exponential
+Title: Matrix Exponential
 Version: 0.999-0
-Date: 2014-09-12
+Date: 2015-02-16
 Author: Vincent Goulet, Christophe Dutang, Martin Maechler,
 	David Firth, Marina Shapira, Michael Stadelmann,
 	expm-developers@lists.R-forge.R-project.org
 Maintainer: Martin Maechler <maechler@stat.math.ethz.ch>
-Description: Computation of the matrix exponential and related quantities.
+Description: Computation of the matrix exponential, logarithm, and related quantities.
 Depends: Matrix
 Suggests: RColorBrewer, sfsmisc
 BuildResaveData: no
 License: GPL (>= 2)
 URL: http://R-Forge.R-project.org/projects/expm/
+Encoding: UTF-8
