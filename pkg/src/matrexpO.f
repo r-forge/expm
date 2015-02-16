@@ -28,6 +28,9 @@ c            as.integer(3),as.integer(0),as.integer(8))
 c
 c       (This is all done automatically in the R package "expm".)
 c
+c -- MM: This is *legacy* code - but we provide the "padeO" ... methods
+c -- ===>  Fix the fortran code enough that it does not give "--as-cran" warnings:
+c
       subroutine matrexpO(a, ndim, ntaylor, npade, accuracy)
 
       integer ndim, ntaylor, npade
@@ -68,9 +71,11 @@ c
 c
 c       copy the result back into a
 c
-        do 10 i=1,ndim
-    	   do 10 j=1,ndim
- 10	      a(i,j) = sum(i,j)
+      do i=1,ndim
+         do j=1,ndim
+            a(i,j) = sum(i,j)
+         end do
+      end do
 c
 c	compute the Cauchy error T(ntaylor+10)-T(ntaylor)
 c                             or P(npade+10)-P(npade)
@@ -120,7 +125,7 @@ c	print*,'A is scaled by 2**',npower,'  =',nscale
         call multiplymatrixO(m,padenom,a,dkeep)
         call multiplyscalarO(m,dkeep,
      $      dble(npade-n+1)/dble(n*(2*npade-n+1)*nscale),padenom)
-	call addtodiag(m,padenom,1.d0)
+        call addtodiag(m,padenom,1.d0)
       end do
       call minus(m,a,aminus)
       call initialize(m,padedenom,0.d0)
@@ -148,9 +153,11 @@ c	initializing a matrix to a scalar s
       double precision x(m,m), s
 
       integer i,j
-      do 10 i=1,m
-        do 10 j=1,m
-10	    x(i,j)=s
+      do i=1,m
+         do j=1,m
+            x(i,j)=s
+         end do
+      end do
       return
       end
 
@@ -160,9 +167,11 @@ c	multiplying a matrix x by a scalar s
 
       implicit double precision (a-h,o-z)
       double precision x(m,m),y(m,m)
-      do 10 i=1,m
-        do 10 j=1,m
-10	    y(i,j)=x(i,j)*s
+      do i=1,m
+        do j=1,m
+            y(i,j)=x(i,j)*s
+        end do
+      end do
       return
       end
 
@@ -172,11 +181,14 @@ c	multiplying 2 matrices
 
       implicit double precision (a-h,o-z)
       double precision x(m,m),y(m,m),z(m,m)
-      do 10 i=1,m
-        do 10 j=1,m
+      do i=1,m
+        do j=1,m
           z(i,j)=0.d0
-          do 10 k=1,m
-10	      z(i,j)=z(i,j)+x(i,k)*y(k,j)
+          do k=1,m
+              z(i,j)=z(i,j)+x(i,k)*y(k,j)
+          end do
+        end do
+      end do
       return
       end
 
@@ -187,9 +199,11 @@ c	assign a matrix x to y
 
       implicit double precision (a-h,o-z)
       double precision x(m,m),y(m,m)
-      do 10 i=1,m
-        do 10 j=1,m
-10	    y(i,j)=x(i,j)
+      do i=1,m
+        do j=1,m
+            y(i,j)=x(i,j)
+        end do
+      end do
       return
       end
 
@@ -202,9 +216,10 @@ c	computing the ith power of a matrix x
       double precision x(m,m),y(m,m),dkeep(m,m)
       call id(m,x,y)
       call id(m,x,dkeep)
-      do 10 i=1,ipower
+      do i=1,ipower
         call multiplymatrixO(m,dkeep,dkeep,y)
-10	  call id(m,y,dkeep)
+        call id(m,y,dkeep)
+      end do
       return
       end
 
@@ -215,8 +230,9 @@ c	assign a vector x to y
 
       implicit double precision (a-h,o-z)
       double precision x(m),y(m)
-      do 10 i=1,m
-10	    y(i)=x(i)
+      do i=1,m
+         y(i)=x(i)
+      end do
       return
       end
 
@@ -230,8 +246,9 @@ c	inner product of 2 vectors
 
       integer i
       dip=0.d0
-      do 10 i=1,m
-10	  dip = dip+u(i)*v(i)
+      do i=1,m
+         dip = dip+u(i)*v(i)
+      end do
       return
       end
 
@@ -262,7 +279,7 @@ c
       double precision dl2norm, dip
 
       double precision alpha, beta, thresh, eps, omega0,omega1,
-     +		omegainit, rho0,rho1, scalar,sigma, tau,vv
+     +          omegainit, rho0,rho1, scalar,sigma, tau,vv
       integer l
 
 
@@ -285,7 +302,7 @@ c	print*,'res0=',dabs(omegainit)
 c	  print*,'rho0=',rho0,'   MG iteration number=1'
         return
       endif
-      do 10 l=1,m
+      do l=1,m
         call multiplyvector(m,A,p,v)
         sigma=dip(m,rbar,v)
         if(dabs(sigma).le.thresh)then
@@ -320,7 +337,8 @@ c	    print*,'rho1=',rho1,'   iteration number=',2*l+1
         rho0=rho1
         call comb(m,rcgs,beta,q,u)
         call comb(m,q,beta,p,save)
-10	  call comb(m,u,beta,save,p)
+        call comb(m,u,beta,save,p)
+      end do
 c	print*,'iteration number=',2*l+1
       return
       end
