@@ -42,7 +42,6 @@ expm.s.Pade.s <- function(x, order, n=nrow(x)) {
 
 expm.methSparse <- c("Higham08", "R_Eigen", "R_Pade")
 ## "FIXME" -- keep this list up-to-date - test by setting  R_EXPM_NO_DENSE_COERCION
-if(getRversion() < "3.1.0") dontCheck <- identity
 
 expm <- function(x, method = c("Higham08.b", "Higham08",
                     "AlMohy-Hi09",
@@ -190,8 +189,15 @@ expm <- function(x, method = c("Higham08.b", "Higham08",
 	       ntaylor <- npade <- 0L
 	       if (substr(method,1,4) == "Pade")
 		   npade <- order else ntaylor <- order
-	       rr <- if(identical(grep("O$", method), 1L)) matrexpO else matrexp
-	       res <- .Fortran(dontCheck(rr),
+	       res <- if(identical(grep("O$", method), 1L))
+			  .Fortran(matrexpO,
+			       X = x,
+			       size = d[1],
+			       ntaylor,
+			       npade,
+			       accuracy = double(1))[c("X", "accuracy")]
+		      else
+			  .Fortran(matrexp,
 			       X = x,
 			       size = d[1],
 			       ntaylor,
