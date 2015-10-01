@@ -9,7 +9,7 @@ Author: Vincent Goulet, Christophe Dutang, Martin Maechler,
 Maintainer: Martin Maechler <maechler@stat.math.ethz.ch>
 Description: Computation of the matrix exponential, logarithm, and related quantities.
 Depends: Matrix
-Suggests: RColorBrewer, sfsmisc
+Suggests: RColorBrewer, sfsmisc, Rmpfr
 BuildResaveData: no
 License: GPL (>= 2)
 URL: http://R-Forge.R-project.org/projects/expm/

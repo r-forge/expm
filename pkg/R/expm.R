@@ -52,13 +52,14 @@ expm <- function(x, method = c("Higham08.b", "Higham08",
 		 do.sparseMsg = TRUE,
 		 preconditioning = c("2bal", "1bal", "buggy"))
 {
-    ## some methods work for "matrix" or "Matrix" matrices:
-    stopifnot(is.numeric(x) || is(x, "dMatrix"))
+    ## some methods work for "matrix", "Matrix", or "mpfrMatrix", iff solve(.,.) worked:
+    stopifnot(is.numeric(x) || (isM <- inherits(x, "dMatrix")) || inherits(x, "mpfrMatrix"))
     if(length(d <- dim(x)) != 2) stop("argument is not a matrix")
     if (d[1] != d[2]) stop("matrix not square")
     method <- match.arg(method)
     checkSparse <- !nzchar(Sys.getenv("R_EXPM_NO_DENSE_COERCION"))
-    if(!is.numeric(x) && checkSparse) { # i.e., a "dMatrix"
+    isM <- !is.numeric(x) && isM
+    if(isM && checkSparse) { # i.e., a "dMatrix"
 	if(!(method %in% expm.methSparse) && is(x, "sparseMatrix")) {
 	    if(do.sparseMsg)
 		message("coercing to dense matrix, as required by method ",
