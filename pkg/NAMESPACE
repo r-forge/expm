@@ -1,6 +1,9 @@
 ### C code
 useDynLib(expm, .registration = TRUE)
 
+importFrom("methods", as, is)
+importFrom("stats", rnorm)
+
 importFrom("Matrix", Schur, norm,
 	   solve,# <- for expm.Higham08(*, balancing=FALSE)
            rowSums, colSums,# e.g. in expm.s.Pade.s
