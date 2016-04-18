@@ -92,8 +92,14 @@ expm.safe.Eigen <- function(x, silent = FALSE) {
     if(inherits(r, "try-error")) NA else r
 }
 
+## the S4 generic
+Matrix::expm
+## the dgeMatrix method:
+expm.Matr.dge <- function(x) getDataPart(getMethod("expm", "dgeMatrix"))(Matrix::..2dge(x))
 expmList <-
-    list(Ward  = function(x) expm::expm(x, "Ward77"),
+    list(Matr = Matrix::expm,
+         Matr.d = expm.Matr.dge,
+         Ward  = function(x) expm::expm(x, "Ward77"),
 	 s.P.s = function(x) expm::expm(x, "Pade"),
 	 s.P.sO= function(x) expm::expm(x, "PadeO"),
 	 s.P.sRBS= function(x) expm::expm(x, "PadeRBS"),
