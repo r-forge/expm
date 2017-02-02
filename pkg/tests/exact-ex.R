@@ -6,7 +6,7 @@ options(digits = 4, width = 90, keep.source = FALSE)
 
 mSource <- function(file, ...)
     source(system.file(file, ..., package = "expm", mustWork=TRUE))
-mSource("test-tools.R")## -> assertError(), rMat(), ..
+mSource("test-tools.R")## -> assertError(), rMat(), .. doExtras
 mSource("demo", "exact-fn.R")
 doExtras
 
