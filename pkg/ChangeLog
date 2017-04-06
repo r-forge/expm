@@ -1,3 +1,8 @@
+2017-04-06  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* src/expm-eigen.c (do_expm_eigen): fix possible PROTECT stack imbalance
+	* src/expm.c (do_expm): ditto; both thanks to T.Kalibera's  `expm.so.bcheck`
+
 2017-03-28  Martin Maechler  <maechler@stat.math.ethz.ch>
 
 	* R/sqrtm.R (sqrtm): simple modification so it works for 1x1 matrix
