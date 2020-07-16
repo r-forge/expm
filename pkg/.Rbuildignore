@@ -1,9 +1,10 @@
 Misc
 foo
-.*\.f\+
-.*_fail
+\.f\+$
+_fail
 inst/doc/auto
 inst/doc/Makefile
-.*\.aux
-.*\.log
-.*\.blg
+expm.*\.out$
+\.aux$
+\.log$
+\.blg$
