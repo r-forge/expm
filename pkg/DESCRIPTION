@@ -1,14 +1,14 @@
 Package: expm
 Type: Package
 Title: Matrix Exponential, Log, 'etc'
-Version: 0.999-5
-Date: 2020-07-16
+Version: 0.999-6
+Date: 2021-01-11
 Author: Vincent Goulet, Christophe Dutang, Martin Maechler,
 	David Firth, Marina Shapira, Michael Stadelmann
 Contact: expm-developers@lists.R-forge.R-project.org
 Maintainer: Martin Maechler <maechler@stat.math.ethz.ch>
 Description: Computation of the matrix exponential, logarithm, sqrt,
-  and related quantities.
+  and related quantities, using traditional and modern methods.
 Depends: Matrix
 Imports: methods
 Suggests: RColorBrewer, sfsmisc, Rmpfr
