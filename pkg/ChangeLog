@@ -1,3 +1,7 @@
+2021-01-12  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* man/*.Rd: updates to \url{}s.
+
 2021-01-11  Martin Maechler  <maechler@stat.math.ethz.ch>
 
 	* tests/ex.R: raise one tolerance (for "M1 mac").
