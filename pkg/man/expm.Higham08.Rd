@@ -22,7 +22,7 @@ expm.Higham08(A, balancing = TRUE)
 }
 \details{
   The algorithm comprises the following steps
-  \enumerate{
+  \describe{
     \item{0.}{Balancing}
     \item{1.}{Scaling}
     \item{2.}{Padé-Approximation}

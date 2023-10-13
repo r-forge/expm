@@ -1,8 +1,8 @@
 Package: expm
 Type: Package
 Title: Matrix Exponential, Log, 'etc'
-Version: 0.999-7
-Date: 2022-12-30
+Version: 0.999-8
+Date: 2023-10-13
 Authors@R: c(person("Martin", "Maechler", role=c("aut","cre"),
                     email="maechler@stat.math.ethz.ch", comment = c(ORCID = "0000-0002-8685-9910"))
   , person("Christophe","Dutang", role = "aut", comment = c(ORCID = "0000-0001-6732-1501"))
