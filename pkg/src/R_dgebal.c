@@ -78,8 +78,16 @@ SEXP R_dgebal(SEXP x, SEXP type)
 #include <complex.h>
 #include <R_ext/Complex.h>
 
-// using  CMPLX(.) macro which must work with 'C11' and newer:
+//  CMPLX(.) "must be" in <complex.h> with 'C11' and newer, still -- fails on Winbuilder (2024-08-09)
+/* # ifndef CMPLX */
+/* # define CMPLX(x, y)  ((double complex)((double)(x) + _Imaginary_I * (double)(y))) */
+/* # endif */
+// rather for now (need only cabs(.)), this seems safer :
+#ifdef CMPLX
 static R_INLINE double R_cabs(Rcomplex z) { return cabs(CMPLX(z.r, z.i)); }
+#else // currently necessary on Winbuilder
+static R_INLINE double R_cabs(Rcomplex z) { return hypot(z.r, z.i); }
+#endif
 
 SEXP R_zgebal(SEXP x, SEXP type)
 {

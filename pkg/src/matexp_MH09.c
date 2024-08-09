@@ -307,11 +307,10 @@ SEXP R_matexp_MH09(SEXP x, SEXP p)
 	REPROTECT(x_ = coerceVector(x_, REALSXP), xpi);
     SEXP R = PROTECT(allocMatrix(TYPEOF(x_), n, n));
     if(isComplex(x)) {
-	// MM{FIXME}: We have already duplicated x to x_ : this should *not* be needed:
-	Rcomplex *x_cp = Memcpy((Rcomplex*)R_alloc(n2, sizeof(Rcomplex)), COMPLEX(x_), n2);
-
 	error(_("matexp_MH09(.) is _not yet_ implemented for complex matrices"));
 #if 0 // see above
+	// MM{FIXME}: We have already duplicated x to x_ : this should *not* be needed:
+	Rcomplex *x_cp = Memcpy((Rcomplex*)R_alloc(n2, sizeof(Rcomplex)), COMPLEX(x_), n2);
 	matexp_MH09_z(x_cp, n, INTEGER(p)[0], COMPLEX(R));
 # endif
 
