@@ -92,7 +92,7 @@ if(!require("Matrix"))
 ##---> now use  expm::expm()  since Matrix has its own may mask the expm one
 ##              ^^^^^^^^^^^^
 
-osV <- abbreviate(sub("\\(.*", "", osVersion), 10)
+(osV <- abbreviate(gsub("[^[:alnum:]]", '', sub("\\(.*", '', osVersion)), 12))
 if(!dev.interactive(TRUE)) pdf(paste0("expm_exact-ex_", osV, ".pdf"), width = 9, height=5)
 ##
 myRversion <- paste(R.version.string, "--", osVersion)

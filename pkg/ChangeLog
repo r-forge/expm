@@ -1,3 +1,7 @@
+2024-08-19  Martin Maechler  <maechler@stat.math.ethz.ch>
+
+	* tests/exact-ex.R (osV): ensure valid in filename
+
 2024-08-08  Martin Maechler  <maechler@stat.math.ethz.ch>
 
 	* inst/test-tools.R (expmAll, allEq): new functions for testing
